@@ -1,0 +1,31 @@
+{
+  "name": "web-sdk",
+  "version": "0.1.0",
+  "description": "Spilgames Html5 SDK",
+  "main": "dist/web-sdk.min.js",
+  "scripts": {
+    "allbrowsers": "karma start --singleRun=true --browsers=$npm_package_config_browsers_ie,$npm_package_config_browsers_ios,$npm_package_config_browsers_android,firefox,chrome,opera,safari"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/spilgames/spil-html5-sdk.git"
+  },
+  "keywords": [
+    "spilgames",
+    "web",
+    "html5",
+    "sdk"
+  ],
+  "author": "native-tech@spilgames.com",
+  "license": "Copyright 2016 SpilGames",
+  "private": true,
+  "analyse": false,
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-cli": "^1.2.0",
+    "grunt-contrib-concat": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^2.0.0",
+    "grunt-contrib-watch": "^1.0.0"
+  }
+}
