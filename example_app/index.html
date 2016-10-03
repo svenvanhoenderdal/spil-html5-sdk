@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>HTML5 Sample SDK</title>
+    <meta name="description" content="Html5-sdk-sample">
+    <meta name="author" content="Rob.vanDiepen">
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+    <script src="../dist/spil-sdk.min.js"></script>
+</head>
+<body>
+    <canvas id="canvas" width="450" height="450"></canvas>
+    <ul id='package_list'></ul>
+    <input id= "custom_event_name" type="text" value="milestoneAchieved">
+    <input id= "custom_event_data" type="text" value="{}">
+    <button id = "custom_evend_send" onclick="send_custom_event()">Send custom event</button>
+</body>
+</html>
