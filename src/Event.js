@@ -12,7 +12,7 @@ function Event(_statics) {
                 var response = JSON.parse(self.responseText);
                 success(response);
             }else if (self.readyState === 4) {
-                failure();
+                failure(JSON.parse(self.responseText));
             }
         };
         http.open(method, statics.get_url(), true);

@@ -6,6 +6,7 @@ module.exports = function(grunt) {
 
     var source_files = [
             "src/Event.js",
+            "src/Config.js",
             "src/Package.js",
             "src/Payments.js",
             "src/SpilSDK.js",
@@ -52,7 +53,7 @@ module.exports = function(grunt) {
         watch: {
             minify: {
                 files: ['src/*.js'],
-                tasks: ['build'],
+                tasks: ['minify'],
                 options: {
                     livereload: true
                 }

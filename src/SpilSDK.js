@@ -6,11 +6,12 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
         event_module = Event(statics);
         wallet = Wallet(event_module);
         package = Package(event_module);
+        config = Config(event_module);
 
         loadScript('https://payments.spilgames.com/static/javascript/spil/payment.client.js', loadCallback);
         loadScript('https://payments.spilgames.com/static/javascript/spil/payment.portal.js', loadCallback);
+        SDK_functions.refreshConfig(loadCallback);
         SDK_functions.updatePackagesAndPromotion(loadCallback);
-        loadCallback();
     },
     send_heartbeat = function() {
         event_module.sendEvent('heartBeat');
@@ -43,6 +44,7 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
     },
     events = {
         'onPackagesUpdated': [],
+        'onConfigUpdated': []
     },
     SDK_functions = {
         callWallet: function() {
@@ -51,6 +53,7 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
         sendCustomEvent: function(event_name, data) {
             event_module.sendEvent(event_name, data);
         },
+        // Package calls
         updatePackagesAndPromotion: function(callback) {
             package.updatePackagesAndPromotion(function(packages_data){
                 triggerEvent('onPackagesUpdated', packages_data);
@@ -68,8 +71,27 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
         openPaymentsScreen: function(package_id) {
             package.openPaymentsScreen(package_id);
         },
+
+        // Config calls
+        refreshConfig: function(callback) {
+            config.refreshConfig(function(config_data){
+                triggerEvent('onConfigUpdated', config_data);
+                if(callback) {
+                    callback(config_data);
+                }
+            });
+        },
+        getConfigAll: function() {
+            return config.getConfigAll();
+        },
+        getConfigValue: function(key) {
+            return config.getConfigValue(key);
+        },
         onPackagesUpdated: function(callback) {
             events.onPackagesUpdated.push(callback);
+        },
+        onConfigUpdated: function(callback) {
+            events.OnConfigUpdated.push(callback);
         },
     };
     init();
