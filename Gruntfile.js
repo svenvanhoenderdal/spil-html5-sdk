@@ -5,13 +5,17 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
     var source_files = [
-            "src/Event.js",
             "src/Config.js",
+            "src/Event.js",
+            "src/GameData.js",
             "src/Package.js",
             "src/Payments.js",
+            "src/PlayerData.js",
             "src/SpilSDK.js",
             "src/Statics.js",
-            "src/Wallet.js"
+            "src/Wallet.js",
+            "src/models/GameDataModel.js",
+            "src/models/UserProfileModel.js"
         ];
 
     grunt.initConfig({
@@ -52,7 +56,7 @@ module.exports = function(grunt) {
 
         watch: {
             minify: {
-                files: ['src/*.js'],
+                files: ['src/*.js', 'src/models/*.js'],
                 tasks: ['minify'],
                 options: {
                     livereload: true
