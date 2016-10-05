@@ -1,25 +1,36 @@
 SpilSDK = function(bundle_id, app_version, callback, environment) {
     var wallet, package,
-        steps_to_load = 4,
+        stepsToLoad = 0,
     init = function() {
         statics = Statics(bundle_id, app_version, environment);
-        event_module = Event(statics);
-        wallet = Wallet(event_module);
-        package = Package(event_module);
-        config = Config(event_module);
+        eventModule = Event(statics);
+        config = Config(eventModule);
+        gameData = GameData(eventModule);
+        wallet = Wallet(eventModule);
+        playerData = PlayerData(eventModule, gameData);
+        package = Package(eventModule);
 
-        loadScript('https://payments.spilgames.com/static/javascript/spil/payment.client.js', loadCallback);
-        loadScript('https://payments.spilgames.com/static/javascript/spil/payment.portal.js', loadCallback);
-        SDK_functions.refreshConfig(loadCallback);
-        SDK_functions.updatePackagesAndPromotion(loadCallback);
+        preloadData(loadScript, ['https://payments.spilgames.com/static/javascript/spil/payment.client.js']);
+        preloadData(loadScript, ['https://payments.spilgames.com/static/javascript/spil/payment.portal.js']);
+        preloadData(SDK_functions.requestGameData);
+        // preloadData(SDK_functions.refreshConfig);
+        // preloadData(SDK_functions.updatePackagesAndPromotion);
+    },
+    preloadData = function(method, args) {
+        stepsToLoad++;
+        args = args || [];
+        args.push(loadCallback);
+        method.apply(this, args);
+        console.log(stepsToLoad);
     },
     send_heartbeat = function() {
-        event_module.sendEvent('heartBeat');
+        eventModule.sendEvent('heartBeat');
     },
     loadCallback = function() {
-        steps_to_load--;
-        if(steps_to_load === 0) {
-            setInterval(send_heartbeat, 1000);
+        stepsToLoad--;
+        console.log(stepsToLoad);
+        if(stepsToLoad === 0) {
+            // setInterval(send_heartbeat, 1000);
             SpilSDK = SDK_functions;
             if (callback) {
                 callback(SDK_functions);
@@ -44,14 +55,14 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
     },
     events = {
         'onPackagesUpdated': [],
-        'onConfigUpdated': []
+        'onConfigUpdated': [],
+        'onGameDataUpdated': [],
+        'onPlayerDataAvailable': [],
+        'onPlayerDataUpdated': []
     },
     SDK_functions = {
-        callWallet: function() {
-            wallet.doStuff();
-        },
         sendCustomEvent: function(event_name, data) {
-            event_module.sendEvent(event_name, data);
+            eventModule.sendEvent(event_name, data);
         },
         // Package calls
         updatePackagesAndPromotion: function(callback) {
@@ -87,12 +98,75 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
         getConfigValue: function(key) {
             return config.getConfigValue(key);
         },
+
+        // GameData
+        requestGameData: function(callback) {
+            gameData.refreshGameData(function(game_data){
+                triggerEvent('onGameDataUpdated', game_data);
+                if(callback) {
+                    callback(game_data);
+                }
+            });
+        },
+        getGameData: function() {
+            return gameData.getGameData();
+        },
+
+        //PlayerData
+        getWallet: function() {
+            return playerData.getWallet();
+        },
+        getInventory: function() {
+            return playerData.getInventory();
+        },
+        addCurrencyToWallet: function(currencyId, amount, reason) {
+            if (amount <= 0) {
+                console.log('Amount should be bigger than zero');
+                return;
+            }
+            playerData.updateWallet(currencyId, amount, reason);
+        },
+        subtractCurrencyFromWallet: function(currencyId, amount, reason) {
+            if (amount <= 0) {
+                console.log('Amount should be bigger than zero');
+                return;
+            }
+            playerData.updateWallet(currencyId, -amount, reason);
+        },
+        addItemToInventory: function(itemId, amount, reason) {
+            if (amount <= 0) {
+                console.log('Amount should be bigger than zero');
+                return;
+            }
+            playerData.updateInventory(itemId, amount, reason);
+        },
+        subtractItemFromInventory: function(itemId, amount, reason) {
+            if (amount <= 0) {
+                console.log('Amount should be bigger than zero');
+                return;
+            }
+            playerData.updateInventory(itemId, -amount, reason);
+        },
+        consumeBundle: function(bundleId, reason) {
+            playerData.consumeBundle(bundleId, reason);
+        },
+
+        // Listeners
         onPackagesUpdated: function(callback) {
             events.onPackagesUpdated.push(callback);
         },
         onConfigUpdated: function(callback) {
-            events.OnConfigUpdated.push(callback);
+            events.onConfigUpdated.push(callback);
         },
+        onGameDataUpdated: function(callback) {
+            events.onGameDataUpdated.push(callback);
+        },
+        onPlayerDataAvailable: function(callback) {
+            events.onPlayerDataAvailable.push(callback);
+        },
+        onPlayerDataUpdated: function(callback) {
+            events.onPlayerDataUpdated.push(callback);
+        }
     };
     init();
 };
