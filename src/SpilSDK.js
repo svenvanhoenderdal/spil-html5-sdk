@@ -1,6 +1,6 @@
 SpilSDK = function(bundle_id, app_version, callback, environment) {
     var wallet, package,
-        stepsToLoad = 0,
+        stepsToLoad = 1,
     init = function() {
         statics = Statics(bundle_id, app_version, environment);
         eventModule = Event(statics);
@@ -13,22 +13,21 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
         preloadData(loadScript, ['https://payments.spilgames.com/static/javascript/spil/payment.client.js']);
         preloadData(loadScript, ['https://payments.spilgames.com/static/javascript/spil/payment.portal.js']);
         preloadData(SDK_functions.requestGameData);
-        // preloadData(SDK_functions.refreshConfig);
+        preloadData(SDK_functions.refreshConfig);
         // preloadData(SDK_functions.updatePackagesAndPromotion);
+        stepsToLoad--;
     },
     preloadData = function(method, args) {
         stepsToLoad++;
         args = args || [];
         args.push(loadCallback);
         method.apply(this, args);
-        console.log(stepsToLoad);
     },
     send_heartbeat = function() {
         eventModule.sendEvent('heartBeat');
     },
     loadCallback = function() {
         stepsToLoad--;
-        console.log(stepsToLoad);
         if(stepsToLoad === 0) {
             // setInterval(send_heartbeat, 1000);
             SpilSDK = SDK_functions;
@@ -61,8 +60,8 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
         'onPlayerDataUpdated': []
     },
     SDK_functions = {
-        sendCustomEvent: function(event_name, data) {
-            eventModule.sendEvent(event_name, data);
+        sendCustomEvent: function(event_name, data, callback) {
+            eventModule.sendEvent(event_name, data, callback);
         },
         // Package calls
         updatePackagesAndPromotion: function(callback) {
