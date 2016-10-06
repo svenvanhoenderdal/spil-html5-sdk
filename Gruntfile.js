@@ -10,7 +10,7 @@ module.exports = function(grunt) {
             "src/GameData.js",
             "src/Package.js",
             "src/Payments.js",
-            "src/PlayerData.js",
+            "src/modules/PlayerData.js",
             "src/SpilSDK.js",
             "src/Statics.js",
             "src/Wallet.js",

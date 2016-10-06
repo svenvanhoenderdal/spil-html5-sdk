@@ -15,7 +15,7 @@ function Event(_statics) {
                 failure(JSON.parse(self.responseText));
             }
         };
-        http.open(method, statics.get_url(), true);
+        http.open(method, statics.get_url()+'/'+data.name, true);
         http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         http.send(parse_json_to_query(data));
     }
