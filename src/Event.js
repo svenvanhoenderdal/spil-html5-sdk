@@ -1,18 +1,13 @@
 function Event(_statics) {
-    var statics = _statics,
-        http = null;
+    var statics = _statics;
     function ajax(method, data, success, failure) {
-        if (!http){
-            http = window.ActiveX ? new ActiveXObject("Microsoft.XMLHTTP"): new XMLHttpRequest();
-        }
-
-        var self = http;
-        self.onreadystatechange = function () {
-            if (self.readyState === 4 && self.status >= 200 && self.status < 300){
-                var response = JSON.parse(self.responseText);
+        var http = window.ActiveX ? new ActiveXObject("Microsoft.XMLHTTP"): new XMLHttpRequest();
+        http.onreadystatechange = function () {
+            if (http.readyState === 4 && http.status >= 200 && http.status < 300){
+                var response = JSON.parse(http.responseText);
                 success(response);
-            }else if (self.readyState === 4) {
-                failure(JSON.parse(self.responseText));
+            }else if (http.readyState === 4) {
+                failure(JSON.parse(http.responseText));
             }
         };
         http.open(method, statics.get_url()+'/'+data.name, true);
