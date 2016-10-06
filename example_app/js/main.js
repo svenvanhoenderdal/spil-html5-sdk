@@ -2,7 +2,8 @@ $(function(){
     SpilSDK('com.spilgames.slot', '0.0.2', function(){
         console.log('sdk ready')
         initgame();
-        SpilSDK.onPackagesUpdated(loadPackages)
+        SpilSDK.onPackagesUpdated(loadPackages);
+        SpilSDK.onConfigUpdated(reloadGameConfig);
     }, 'stg')
 
     $('loadingscreen').show();
@@ -22,8 +23,9 @@ $(function(){
             $('#package_list').append('<li><button onclick="open_payments(' + package.packageId + ')">' + package.packageId + '</button></li>')
         }
     }
-
-    var game = new SnakeGame();
+    var reloadGameConfig = function(gameConfig) {
+        $('#game_config_area').text(JSON.stringify(gameConfig));
+    }
 
     open_payments = function(package_id) {
         console.log('open payments for package: ' + package_id)
@@ -36,6 +38,8 @@ $(function(){
             data = {}
         }
         event_name = $('#custom_event_name').val()
-        SpilSDK.sendCustomEvent(event_name, data)
+        SpilSDK.sendCustomEvent(event_name, data, function(response) {
+            $('#custom_event_result').text(JSON.stringify(response));
+        })
     }
 });
