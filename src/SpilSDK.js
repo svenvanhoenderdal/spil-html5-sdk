@@ -9,7 +9,6 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
         wallet = Wallet(eventModule);
         playerData = PlayerData(eventModule, gameData);
         package = Package(eventModule);
-
         preloadData(loadScript, ['https://payments.spilgames.com/static/javascript/spil/payment.client.js']);
         preloadData(loadScript, ['https://payments.spilgames.com/static/javascript/spil/payment.portal.js']);
         preloadData(SDK_functions.requestGameData);
