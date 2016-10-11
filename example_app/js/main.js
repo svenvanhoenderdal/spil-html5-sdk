@@ -5,20 +5,23 @@ $(function(){
 
         //SpilSDK.a();
 
-        SpilSDK.onPackagesUpdated(function(packages_data){
-            console.log('onPackagesUpdated called')
+        SpilSDK.onPackagesUpdated(function(packages){
+            $('#package_list').empty();
+            for (var key in packages) {
+                package = packages[key];
+                $('#package_list').append('<li><button onclick="SpilSDK.openPaymentsScreen(' + package.packageId + ')">' + package.packageId + '</button></li>');
+            }
         });
 
-        SpilSDK.requestPackages(function(packages_data){
-            console.log('updatePackagesAndPromotion callback: ' )
-        });
+        SpilSDK.requestPackages();
 
         //console.log(SpilSDK);
 
         //initgame();
         //SpilSDK.onPackagesUpdated(loadPackages);
         //SpilSDK.onConfigUpdated(reloadGameConfig);
-    }, 'stg')
+    }, 'stg');
+
 
     //$('loadingscreen').show();
 

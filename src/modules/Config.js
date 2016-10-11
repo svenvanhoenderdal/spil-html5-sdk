@@ -1,14 +1,14 @@
 var Event = require('./Event');
 var Events = require('../core_modules/Events');
 
-var storeconfig = {};
+var config = {};
 
 module.exports = {
     'SpilSDK':{
         refreshConfig: function(callback) {
             Event.sendEvent('requestConfig', {}, function(response_data){
-                data = storeconfig = response_data.data;
-                Events.publish('onConfigUpdated', data);
+                config = response_data.data;
+                Events.publish('onConfigUpdated', config);
                 if (callback) {
                     callback(data);
                 }

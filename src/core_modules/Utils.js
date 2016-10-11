@@ -24,6 +24,8 @@ if (typeof Object.assign != 'function') {
 }
 
 var Config = require('./Config.js')();
+var meta = document.querySelector('meta[property="portal:site:id"]');
+var siteId = (meta === null)? 186 : meta.getAttribute('content');
 
 var uuid = null,
     locale = null,
@@ -36,6 +38,9 @@ var uuid = null,
     environment = Config.environment || 'prd';
 
 module.exports = {
+    getSiteId: function(){
+        return siteId;
+    },
     get_current_timestamp: function(convert_to_seconds) {
         if (!Date.now) {
             Date.now = function() {

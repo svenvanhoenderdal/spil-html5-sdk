@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <!-- portal tags added to test the meta tags that spil uses on their pages for siteid -->
+    <meta property="portal:site:id" content="1">
+    <meta property="portal:channel:id" content="1">
     <title>HTML5 Sample SDK</title>
     <meta name="description" content="Html5-sdk-sample">
     <meta name="author" content="Rob.vanDiepen">
@@ -22,7 +25,7 @@
                 <li><a href="#playerdata" data-toggle="tab">Playerdata</a></li>
             </ul>
         </div>
-         <div class="panel-body">
+        <div class="panel-body">
             <div class="tab-content">
                 <div class="tab-pane fade in active" id="game_config">
                     <button id="game_config_refresh" onclick="SpilSDK.refreshConfig()">Refresh GameConfig</button>
@@ -38,7 +41,8 @@
                     <span id="custom_event_result"></span>
                 </div>
                 <div class="tab-pane fade" id="packages">
-                    <ul class='package_list'></ul>
+                    <button id="request_packages" onclick="SpilSDK.requestPackages()">Update packages and promotions</button>
+                    <ul id='package_list'></ul>
                 </div>
                 <div class="tab-pane fade" id="playerdata">
                     <button id="getwallet" onclick="SpilSDK.getWallet()">SpilSDK.getWallet()</button>
@@ -46,5 +50,6 @@
                 </div>
             </div>
         </div>
+    </div>
 </body>
 </html>
