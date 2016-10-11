@@ -1,19 +1,23 @@
 var Event = require('./Event');
 
+var Utils = require('../core_modules/Utils.js');
+var Config = require('../modules/Config.js');
+
 module.exports = {
-    'SpilSDK': {
-        openPaymentsScreen: function (package_id, reference_number) {
-            var client = new PaymentClient(),
-                options = {
-                    'siteId': 1,
-                    'gameId': 2,
-                    'userId': 'Little.Bear',
-                    'token': 'example-token-1234',
-                    'params': 'package_id=' + package_id + '&reference_number=' + reference_number,
-                    'selectedSku': 'Coins',
-                    'dynamic_pricing': 1
-                };
-            client.showPaymentSelectionScreen(options);
-        }
+    openPaymentsScreen: function (packageId, referenceNumber) {
+        var client = new PaymentClient(),
+            options = {
+                'siteId': Utils.getSiteId(),
+                'gameId': Config.SpilSDK.getConfigValue('payment_game_id'),
+                'userId': Utils.get_uuid(),
+                'token': '',
+                'params': JSON.stringify({
+                    'package_id': packageId,
+                    'reference_number': referenceNumber
+                }).replace(/"/g, '%22'),
+                'dynamic_pricing': 1
+            };
+        client.showPaymentSelectionScreen(options);
     }
+
 };

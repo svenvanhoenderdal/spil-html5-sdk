@@ -2,19 +2,20 @@ var Event = require('./Event.js'),
     payments = require('./Payments.js'),
     Events = require('../core_modules/Events.js'),
     packages = {},
+    packagesData = [],
     promotions = {};
 
-function storePackagesAndPromotions(response_data) {
+function storePackagesAndPromotions(responseData) {
     packages = {};
-    var packages_data = response_data.data.packages;
-    for (var i = 0; i < packages_data.length; i++) {
-        var package = packages_data[i];
+    packagesData = responseData.data.packages;
+    for (var i = 0; i < packagesData.length; i++) {
+        var package = packagesData[i];
         packages[package.packageId] = package;
     }
     promotions = {};
-    var promotions_data = response_data.data.promotions;
-    for (i = 0; i < promotions_data.length; i++) {
-        var promotion = promotions_data[i];
+    var promotionsData = responseData.data.promotions;
+    for (i = 0; i < promotionsData.length; i++) {
+        var promotion = promotionsData[i];
         promotions[promotion.promotionId] = promotion;
     }
     return packages;
@@ -23,8 +24,8 @@ function storePackagesAndPromotions(response_data) {
 module.exports = {
     'SpilSDK': {
         requestPackages: function (callback) {
-            Event.sendEvent('requestPackages', {}, function (response_data) {
-                data = storePackagesAndPromotions(response_data);
+            Event.sendEvent('requestPackages', {}, function (responseData) {
+                data = storePackagesAndPromotions(responseData);
                 Events.publish('onPackagesUpdated', data);
                 if (callback) {
                     callback(data);
@@ -32,18 +33,17 @@ module.exports = {
             });
         },
         getAllPackages: function () {
-            return packages;
+            return packagesData;
         },
-        getPackage: function (package_id) {
-            return packages[package_id];
+        getPackage: function (packageId) {
+            return packages[packageId] || null;
         },
-        getPromotion: function (promotion_id) {
-            return promotion;
+        getPromotion: function (packageId) {
+            return promotions[packageId] || null;
         },
-        openPaymentsScreen: function (package_id) {
-            Event.sendEvent('prepareWebPayments', {}, function (response_data) {
-                console.log(response_data);
-                payments.openPaymentsScreen(package_id, response_data.data.referenceNumber);
+        openPaymentsScreen: function (packageId) {
+            Event.sendEvent('prepareWebPayments', {}, function (responseData) {
+                payments.openPaymentsScreen(packageId, responseData.data.referenceNumber);
             });
         },
         onPackagesUpdated:function(callback){
