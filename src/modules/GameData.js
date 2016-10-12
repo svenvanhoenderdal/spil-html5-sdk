@@ -1,17 +1,14 @@
 var Event = require('./Event');
 var Events = require('../core_modules/Events.js');
-
-
+var GameData = require('../models/gameData/GameData.js');
 
 var gameData;
-
-
 
 module.exports = {
     'SpilSDK': {
         requestGameData: function (callback) {
             Event.sendEvent('requestGameData', {}, function (response_data) {
-                gameData = response_data.data;
+                gameData = new GameData(response_data.data);
                 Events.publish('onGameDataUpdated', gameData);
                 if (callback) {
                     callback(gameData);

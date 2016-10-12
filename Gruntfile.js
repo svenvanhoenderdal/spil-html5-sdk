@@ -6,17 +6,32 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-browserify');
 
     var source_files = [
-            "src/Config.js",
-            "src/Event.js",
-            "src/GameData.js",
-            "src/Package.js",
-            "src/Payments.js",
-            "src/modules/PlayerData.js",
             "src/SpilSDK.js",
-            "src/Statics.js",
-            "src/Wallet.js",
-            "src/models/GameDataModel.js",
-            "src/models/UserProfileModel.js"
+            "src/core_modules/CallbackQueue.js",
+            "src/core_modules/Config.js",
+            "src/core_modules/Events.js",
+            "src/core_modules/ScriptLoader.js",
+            "src/core_modules/Utils.js",
+            "src/models/gameData/BundleItemModel.js",
+            "src/models/gameData/BundleModel.js",
+            "src/models/gameData/BundlePriceModel.js",
+            "src/models/gameData/CurrencyModel.js",
+            "src/models/gameData/EntryModel.js",
+            "src/models/gameData/GameDataModel.js",
+            "src/models/gameData/ItemModel.js",
+            "src/models/gameData/PromotionModel.js",
+            "src/models/gameData/TabModel.js",
+            "src/models/playerData/InventoryModel.js",
+            "src/models/playerData/PlayerCurrencyModel.js",
+            "src/models/playerData/PlayerItemModel.js",
+            "src/models/playerData/UserProfileModel.js",
+            "src/models/playerData/WalletModel.js",
+            "src/modules/Config.js",
+            "src/modules/Event.js",
+            "src/modules/GameData.js",
+            "src/modules/Package.js",
+            "src/modules/Payments.js",
+            "src/modules/PlayerData.js"
         ];
 
     grunt.initConfig({
@@ -56,7 +71,7 @@ module.exports = function(grunt) {
         //},
 
         watch: {
-            files: ['src/*.js','src/modules/*.js', 'src/core_modules/*.js'],
+            files: ['src/*.js', 'src/*/*.js', 'src/*/*/*.js'],
             tasks: ['default']
             //minify: {
             //    files: ['src/*.js', 'src/models/*.js'],
