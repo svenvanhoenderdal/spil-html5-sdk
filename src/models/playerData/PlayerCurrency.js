@@ -1,8 +1,8 @@
 var Currency = require('../gameData/Currency.js');
 
-function PlayerCurrency(playerCurrencyData, _gameData) {
+function PlayerCurrency(playerCurrencyData, gameData) {
     Currency.call(this, playerCurrencyData);
-    var currency = _gameData.getCurrency(this.id);
+    var currency = gameData.getCurrency(this.id);
     this.name = currency.getName();
     this.type = currency.getType();
     this.currentBalance = playerCurrencyData.currentBalance;

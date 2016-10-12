@@ -8,7 +8,7 @@ function Promotion(promotionData, _gameData) {
     this.endDate = promotionData.endDate;
 
     this.prices = []
-    for(var i in promotionData.prices){
+    for (var i = 0; i < promotionData.prices.length; i++) {
         var price = promotionData.prices[i]
         this.prices.push(new BundlePrice(price, _gameData))
     }

@@ -1,8 +1,8 @@
 var Item = require('../gameData/Item.js');
 
-function PlayerItem(playerItemData, _gameData) {
+function PlayerItem(playerItemData, gameData) {
     Item.call(this, playerItemData);
-    var item = _gameData.getItem(this.id);
+    var item = gameData.getItem(this.id);
     this.name = item.getName();
     this.type = item.getType();
     this.amount = playerItemData.amount;

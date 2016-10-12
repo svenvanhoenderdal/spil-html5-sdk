@@ -1,18 +1,18 @@
 var BundlePrice = require('./BundlePrice.js');
 var BundleItem = require('./BundleItem.js');
 
-function Bundle(itemData, _gameData) {
+function Bundle(itemData, gameData) {
     this.id = itemData.id;
     this.name = itemData.name;
     this.prices = [];
-    for (var i in itemData.prices) {
+    for (var i = 0; i < itemData.prices.length; i++) {
         var price = itemData.prices[i];
-        this.prices.push(new BundlePrice(price, _gameData));
+        this.prices.push(new BundlePrice(price, gameData));
     }
     this.items = [];
-    for (i in itemData.items) {
+    for (i = 0; i < inventoryData.items.length; i++) {
         var item = itemData.items[i];
-        this.items.push(new BundleItem(item, _gameData));
+        this.items.push(new BundleItem(item, gameData));
     }
 }
 Bundle.prototype.getId = function() {

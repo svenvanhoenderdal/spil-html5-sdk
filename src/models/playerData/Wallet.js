@@ -1,10 +1,10 @@
 var PlayerCurrency = require('./PlayerCurrency');
 
-function Wallet(walletData, _gameData) {
+function Wallet(walletData, gameData) {
     this.currencies = [];
     this.currenciesDict = {};
-    for (i in walletData.currencies) {
-        var currency = new PlayerCurrency(walletData.currencies[i], _gameData);
+    for (var i = 0; i < walletData.currencies.length; i++) {
+        var currency = new PlayerCurrency(walletData.currencies[i], gameData);
         this.currencies.push(currency);
         this.currenciesDict[currency.getId()] = currency;
     }

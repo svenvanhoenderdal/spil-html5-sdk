@@ -4,39 +4,37 @@ var Currency = require('./Currency');
 var Promotion = require('./Promotion');
 var Tab = require('./Tab');
 
-function GameData(_gameData) {
-    this.gameData = _gameData;
-
+function GameData(gameData) {
     this.items = [];
     this.itemsDict = {};
-    for(var i in _gameData.items) {
+    for (var i = 0; i < gameData.items.length; i++) {
         var item = new Item(_gameData.items[i]);
         this.items.push(item);
         this.itemsDict[item.getId()] = item;
     }
     this.bundles = [];
     this.bundlesDict = {};
-    for(i in _gameData.bundles) {
+    for (i = 0; i < gameData.bundles.length; i++) {
         var bundle = new Bundle(_gameData.bundles[i], this);
         this.bundles.push(bundle);
         this.bundlesDict[bundle.getId()] = bundle;
     }
     this.currencies = [];
     this.currenciesDict = {};
-    for(i in _gameData.currencies) {
+    for (i = 0; i < gameData.currencies.length; i++) {
         var currency = new Currency(_gameData.currencies[i]);
         this.currencies.push(currency);
         this.currenciesDict[currency.getId()] = currency;
     }
     this.promotions = [];
     this.promotionsDict = {};
-    for(i in _gameData.promotions) {
+    for (i = 0; i < gameData.promotions.length; i++) {
         var promotion = new Promotion(_gameData.promotions[i], this);
         this.promotions.push(promotion);
         this.promotionsDict[promotion.getBundleId()] = promotion;
     }
     this.shop = []
-    for (var i = 0; i < _gameData.shop.length; i++) {
+    for (i = 0; i < gameData.shop.length; i++) {
         var tab = new Tab(_gameData.shop[i], this)
         this.shop.push(tab);
     }

@@ -1,10 +1,10 @@
 var PlayerItem = require('./PlayerItem');
 
-function Inventory(inventoryData, _gameData) {
+function Inventory(inventoryData, gameData) {
     this.items = [];
     this.itemsDict = {};
-    for (i in inventoryData.items) {
-        var item = new PlayerItem(inventoryData.items[i], _gameData);
+    for (var i = 0; i < inventoryData.items.length; i++) {
+        var item = new PlayerItem(inventoryData.items[i], gameData);
         this.items.push(item);
         this.itemsDict[item.getId()] = item;
     }
