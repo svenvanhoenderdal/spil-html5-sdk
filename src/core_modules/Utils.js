@@ -58,13 +58,11 @@ module.exports = {
     get_uuid: function () {
         if (!uuid) {
             var UUID_KEY = 'uuid';
-            if (!localStorage) {
-                throw Error('No local storage available!');
-            }
-            uuid = localStorage.getItem(UUID_KEY);
+            uuid = this.getFromStorage(UUID_KEY);
+
             if (!uuid) {
                 uuid = this.generate_uuid();
-                localStorage.setItem(UUID_KEY, uuid);
+                this.storeInStorage(UUID_KEY, uuid);
             }
         }
         return uuid;
@@ -113,6 +111,17 @@ module.exports = {
     },
     get_url: function() {
         return "http://api-" + environment + ".sap.dmz.ams1.spil/v1/native-events/event/html5/slottestgame";
+    },
+    getFromStorage: function(key) {
+        if (!localStorage) {
+            throw Error('No local storage available!');
+        }
+        return localStorage.getItem(key);
+    },
+    storeInStorage: function(key, value) {
+        if (!localStorage) {
+            throw Error('No local storage available!');
+        }
+        localStorage.setItem(key, value);
     }
-
 };

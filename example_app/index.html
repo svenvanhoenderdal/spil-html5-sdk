@@ -23,6 +23,7 @@
                 <li><a href="#custom_event" data-toggle="tab">Custom Events</a></li>
                 <li><a href="#packages" data-toggle="tab">Packages</a></li>
                 <li><a href="#playerdata" data-toggle="tab">Playerdata</a></li>
+                <li><a href="#ingameshop" data-toggle="tab">Ingame Shop</a></li>
             </ul>
         </div>
         <div class="panel-body">
@@ -47,6 +48,25 @@
                 <div class="tab-pane fade" id="playerdata">
                     <button id="getwallet" onclick="SpilSDK.getWallet()">SpilSDK.getWallet()</button>
 
+                </div>
+                <div class="tab-pane fade" id="ingameshop">
+                    <button id="ingameshop" onclick="refreshShop()">RefreshShop</button>
+                    <li id="ingameshopTabTemplate" class="hidden"><a class="ingameshopTabButton" href="#ingameshopTabPlaceholder" data-toggle="tab">Placeholder</a></li>
+                    <div id="ingameshopTabPlaceholder" class="tab-pane fade ">
+                        <ul class="ingameshopEntryList">
+                            <li id="ingameshopEntryTemplate" class="hidden">
+                                <span class="bundleHolder"></span><span class="labelHolder"></span> <span class="buttonHolder"></span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="panel with-nav-tabs panel-default">
+                        <div class="panel-heading">
+                            <ul id="ingameshopTabList" class="nav nav-tabs nav-tabs-sm"></ul>
+                        </div>
+                        <div class="panel-body">
+                            <div id="ingameShopEntriesList" class="tab-content"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,8 +1,6 @@
 var ScriptLoader = require('./ScriptLoader.js');
 
-
-
-module.exports = function(callbacks, onFinishCallback){
+module.exports = function(actions, onFinishCallback){
 
     var counter = 0;
 
@@ -21,16 +19,14 @@ module.exports = function(callbacks, onFinishCallback){
         method.apply(this, args);
     }
 
-    for(var i=0;i<callbacks.length;i++){
+    for(var i=0;i<actions.length;i++){
 
-        var callback_config = callbacks[i];
+        var preload_config = actions[i];
 
-        if(callback_config.callback == 'loadscript'){
-            preloadData(ScriptLoader, callback_config.args);
+        if(preload_config.action == 'loadscript'){
+            preloadData(ScriptLoader, preload_config.args);
         }else{
-            preloadData(callback_config.callback, callback_config.args);
+            preloadData(preload_config.action, preload_config.args);
         }
-
     }
-
 };

@@ -11,7 +11,7 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
      * @type {*|exports|module.exports}
      */
     var Utils = require('./core_modules/Utils.js');
-    var CallbackQueue = require('./core_modules/CallbackQueue.js');
+    var PreloadQueue = require('./core_modules/PreloadQueue.js');
     var Events = require('./core_modules/Events.js');
 
     /**
@@ -22,19 +22,24 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
     var Event = require('./modules/Event.js');
     var ConfigModule = require('./modules/Config.js');
     var Package = require('./modules/Package.js');
+    var PlayerData = require('./modules/PlayerData.js');
 
-    var modules = [Event, GameData, ConfigModule, Package];
+    var modules = [Event, GameData, ConfigModule, Package, PlayerData];
 
     function init() {
 
-        CallbackQueue([{
-            callback: 'loadscript',
+        PreloadQueue([{
+            action: 'loadscript',
             args: ['https://payments.spilgames.com/static/javascript/spil/payment.client.js']
         },{
-            callback: 'loadscript',
+            action: 'loadscript',
             args: ['https://payments.spilgames.com/static/javascript/spil/payment.portal.js']
         },{
-            callback: GameData.SpilSDK.requestGameData
+            action: function(callback) {
+                GameData.SpilSDK.requestGameData(function() {
+                    PlayerData.SpilSDK.requestPlayerData(callback);
+                });
+            }
         }
         ], function(){
 
@@ -53,8 +58,6 @@ SpilSDK = function(bundle_id, app_version, callback, environment) {
                 args.push(modules[i]['SpilSDK']);
             }
             SpilSDK = Object.assign.apply(null, args);
-
-
 
             callback(SpilSDK);
 
