@@ -3,13 +3,13 @@ function BundlePrice(bundlePriceData, _gameData) {
     this.currencyId = bundlePriceData.currencyId;
     this.value = bundlePriceData.value;
 }
-BundlePrice.prototype.getCurrencyId = function() {
+BundlePrice.prototype.getCurrencyId = function () {
     return this.currencyId;
 };
-BundlePrice.prototype.getValue = function(){
+BundlePrice.prototype.getValue = function () {
     return this.value;
 };
-BundlePrice.prototype.getCurrency = function(){
+BundlePrice.prototype.getCurrency = function () {
     return this.gameData.getCurrency(this.currencyId);
 };
 

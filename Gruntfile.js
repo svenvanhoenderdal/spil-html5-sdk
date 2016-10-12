@@ -4,6 +4,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-browserify');
+    grunt.loadNpmTasks('grunt-jscs');
 
     var source_files = [
             "src/SpilSDK.js",
@@ -43,43 +44,30 @@ module.exports = function(grunt) {
                 browser: true,
                 expr: true
             },
-            source: ['src/*.js', 'Gruntfile.js']
+            source: ['src/*.js','src/*/*.js','src/*/*/*.js']
         },
+        jscs: {
+            src: ['src/*.js','src/*/*.js','src/*/*/*.js'],
+            options: {
+                preset: "crockford", // see: https://github.com/jscs-dev/node-jscs/blob/master/presets/crockford.json
+                fix: true, // Autofix code style violations when possible.
 
-        //concat: {
-        //    options: {
-        //        process: function(src, filepath) {
-        //            src = '\n// --- Source: ' + filepath.replace('src/', '') + ' ---\n' + src;
-        //            return src;
-        //        }
-        //    },
-        //    build: {
-        //        src: source_files,
-        //        dest: 'dist/spil-sdk.js'
-        //    }
-        //},
-
-        //uglify: {
-        //    options: {
-        //        compress: true
-        //    },
-        //    build: {
-        //        files: {
-        //            'dist/spil-sdk.min.js': ['dist/spil-sdk.js']
-        //        }
-        //    }
-        //},
-
+                /*
+                 * overrides of preset
+                 * information on available rules and effects: http://jscs.info/rules
+                 */
+                requireVarDeclFirst: false,
+                requireMultipleVarDecl: {allExcept: ['require']},
+                requireCamelCaseOrUpperCaseIdentifiers: true,
+                disallowDanglingUnderscores: false,
+                validateQuoteMarks: "\"",
+                validateParameterSeparator: ", ",
+                maximumLineLength: 120
+            }
+        },
         watch: {
-            files: ['src/*.js', 'src/*/*.js', 'src/*/*/*.js'],
+            files: ['src/*.js','src/*/*.js','src/*/*/*.js'],
             tasks: ['default']
-            //minify: {
-            //    files: ['src/*.js', 'src/models/*.js'],
-            //    tasks: ['minify'],
-            //    options: {
-            //        livereload: true
-            //    }
-            //}
         },
         browserify: {
             main: {
@@ -89,9 +77,6 @@ module.exports = function(grunt) {
         }
     });
 
-    //grunt.registerTask('lint', 'jshint:source');
-    //grunt.registerTask('build', ['lint', 'minify']);
-    //grunt.registerTask('minify', ['concat:build', 'uglify:build']);
-    //grunt.registerTask('mw', 'watch:minify');
-    grunt.registerTask('default', ['browserify', 'watch']);
+    grunt.registerTask('lint', 'jshint:source');
+    grunt.registerTask('default', ['jshint:source', 'jscs', 'browserify', 'watch']);
 };

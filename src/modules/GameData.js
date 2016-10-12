@@ -1,15 +1,14 @@
-var Event = require('./Event');
-var Events = require('../core_modules/Events.js');
-var GameData = require('../models/gameData/GameData.js');
-
+var EventUtil = require("./EventUtil");
+var Events = require("../core_modules/Events");
+var GameData = require("../models/gameData/GameData");
 var gameData;
 
 module.exports = {
-    'SpilSDK': {
+    "SpilSDK": {
         requestGameData: function (callback) {
-            Event.sendEvent('requestGameData', {}, function (response_data) {
-                gameData = new GameData(response_data.data);
-                Events.publish('onGameDataUpdated', gameData);
+            EventUtil.sendEvent("requestGameData", {}, function (responseData) {
+                gameData = new GameData(responseData.data);
+                Events.publish("onGameDataUpdated", gameData);
                 if (callback) {
                     callback(gameData);
                 }
@@ -18,8 +17,8 @@ module.exports = {
         getGameData: function () {
             return gameData;
         },
-        onGameDataUpdated:function(callback){
-            Events.subscribe('onGameDataUpdated', callback);
+        onGameDataUpdated: function (callback) {
+            Events.subscribe("onGameDataUpdated", callback);
         }
     }
 };

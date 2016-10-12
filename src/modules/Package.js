@@ -1,7 +1,8 @@
-var Event = require('./Event.js'),
-    payments = require('./Payments.js'),
-    Events = require('../core_modules/Events.js'),
-    packages = {},
+var EventUtil = require("./EventUtil");
+var Payments = require("./Payments");
+var Events = require("../core_modules/Events");
+
+var packages = {},
     packagesData = [],
     promotions = {};
 
@@ -22,11 +23,11 @@ function storePackagesAndPromotions(responseData) {
 }
 
 module.exports = {
-    'SpilSDK': {
+    "SpilSDK": {
         requestPackages: function (callback) {
-            Event.sendEvent('requestPackages', {}, function (responseData) {
+            EventUtil.sendEvent("requestPackages", {}, function (responseData) {
                 data = storePackagesAndPromotions(responseData);
-                Events.publish('onPackagesUpdated', data);
+                Events.publish("onPackagesUpdated", data);
                 if (callback) {
                     callback(data);
                 }
@@ -42,12 +43,12 @@ module.exports = {
             return promotions[packageId] || null;
         },
         openPaymentsScreen: function (packageId) {
-            Event.sendEvent('prepareWebPayments', {}, function (responseData) {
-                payments.openPaymentsScreen(packageId, responseData.data.referenceNumber);
+            EventUtil.sendEvent("prepareWebPayments", {}, function (responseData) {
+                Payments.openPaymentsScreen(packageId, responseData.data.referenceNumber);
             });
         },
-        onPackagesUpdated:function(callback){
-            Events.subscribe('onPackagesUpdated', callback);
+        onPackagesUpdated: function (callback) {
+            Events.subscribe("onPackagesUpdated", callback);
         }
     }
 };

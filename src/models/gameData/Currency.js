@@ -4,16 +4,16 @@ function Currency(currencyData) {
     this.initialValue = currencyData.initialValue;
     this.type = currencyData.type;
 }
-Currency.prototype.getId = function() {
+Currency.prototype.getId = function () {
     return this.id;
 };
-Currency.prototype.getName = function(){
+Currency.prototype.getName = function () {
     return this.name;
 };
-Currency.prototype.getInitialValue = function(){
+Currency.prototype.getInitialValue = function () {
     return this.initialValue;
 };
-Currency.prototype.getType = function(){
+Currency.prototype.getType = function () {
     return this.type;
 };
 

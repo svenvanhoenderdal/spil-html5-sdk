@@ -1,10 +1,10 @@
-if (typeof Object.assign != 'function') {
+if (typeof Object.assign !== "function") {
     (function () {
         Object.assign = function (target) {
-            'use strict';
+            "use strict";
             // We must check against these specific cases.
             if (target === undefined || target === null) {
-                throw new TypeError('Cannot convert undefined or null to object');
+                throw new TypeError("Cannot convert undefined or null to object");
             }
 
             var output = Object(target);
@@ -23,104 +23,100 @@ if (typeof Object.assign != 'function') {
     })();
 }
 
-var Config = require('./Config.js')();
-var meta = document.querySelector('meta[property="portal:site:id"]');
-var siteId = (meta === null)? 186 : meta.getAttribute('content');
-
-var uuid = null,
+var config = require("./Config")(),
+    meta = document.querySelector("meta[property=\"portal:site:id\"]"),
+    siteId = (meta === null) ? 186 : meta.getAttribute("content"),
+    uuid = null,
     locale = null,
-    timezone_offset = null,
-    timestamp_opened = null,
-    session_id = null,
-    last_event_sent = null,
-    bundle_id = Config.bundle_id,
-    app_version = Config.app_version || '0.0.1',
-    environment = Config.environment || 'prd';
+    timezoneOffset = null,
+    timestampOpened = null,
+    sessionId = null,
+    lastEventSent = null,
+    bundleId = config.bundleId,
+    appVersion = config.appVersion || "0.0.1",
+    environment = config.environment || "prd";
 
 module.exports = {
-    getSiteId: function(){
+    getSiteId: function () {
         return siteId;
     },
-    get_current_timestamp: function(convert_to_seconds) {
+    getCurrentTimestamp: function (convertToSeconds) {
         if (!Date.now) {
-            Date.now = function() {
+            Date.now = function () {
                 return new Date().getTime();
             };
         }
-        return convert_to_seconds ? Date.now() / 1000 | 0 : Date.now();
+        return convertToSeconds ? Date.now() / 1000 | 0 : Date.now();
     },
-    generate_uuid: function() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+    generateUuid: function () {
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c === "x" ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     },
-    get_uuid: function () {
+    getUuid: function () {
         if (!uuid) {
-            var UUID_KEY = 'uuid';
+            var UUID_KEY = "uuid";
             uuid = this.getFromStorage(UUID_KEY);
 
             if (!uuid) {
-                uuid = this.generate_uuid();
+                uuid = this.generateUuid();
                 this.storeInStorage(UUID_KEY, uuid);
             }
         }
         return uuid;
     },
-    get_locale: function () {
+    getLocale: function () {
         if (!locale) {
             locale = navigator.languages ? navigator.languages[0] : (navigator.language || navigator.userLanguage);
         }
         return locale;
     },
-    get_app_version: function () {
-        return app_version;
+    getAppVersion: function () {
+        return appVersion;
     },
-    get_api_version: function () {
-        return '0.1.0';
+    getApiVersion: function () {
+        return "0.1.0";
     },
-    get_os: function () {
-        return 'html5';
+    getOs: function () {
+        return "html5";
     },
-    get_bundle_id: function () {
-        return bundle_id;
+    getBundleId: function () {
+        return bundleId;
     },
-    get_timezone_offset: function () {
-        if (!timezone_offset) {
-            timezone_offset = new Date().getTimezoneOffset().toString();
+    getTimezoneOffset: function () {
+        return (timezoneOffset) ? timezoneOffset : new Date().getTimezoneOffset().toString();
+    },
+    getTotalTimeOpen: function () {
+        if (!timestampOpened) {
+            timestampOpened = this.getCurrentTimestamp(true);
         }
-        return timezone_offset;
+        return (this.getCurrentTimestamp(true) - timestampOpened).toString();
     },
-    get_total_time_open: function () {
-        if (!timestamp_opened) {
-            timestamp_opened = this.get_current_timestamp(true);
+    getSessionId: function () {
+        var currentTime = this.getCurrentTimestamp(true);
+        if (!sessionId) {
+            sessionId = this.generateUuid();
+            lastEventSent = currentTime;
         }
-        return (this.get_current_timestamp(true) - timestamp_opened).toString();
+        if (currentTime - lastEventSent > 900) {
+            sessionId = this.generateUuid();
+        }
+        lastEventSent = currentTime;
+        return sessionId;
     },
-    get_session_id:function () {
-        var current_time = this.get_current_timestamp(true);
-        if (!session_id) {
-            session_id = this.generate_uuid();
-            last_event_sent = current_time;
-        }
-        if (current_time - last_event_sent > 900) {
-            session_id = this.generate_uuid();
-        }
-        last_event_sent = current_time;
-        return session_id;
-    },
-    get_url: function() {
+    getUrl: function () {
         return "http://api-" + environment + ".sap.dmz.ams1.spil/v1/native-events/event/html5/slottestgame";
     },
-    getFromStorage: function(key) {
+    getFromStorage: function (key) {
         if (!localStorage) {
-            throw Error('No local storage available!');
+            throw Error("No local storage available!");
         }
         return localStorage.getItem(key);
     },
-    storeInStorage: function(key, value) {
+    storeInStorage: function (key, value) {
         if (!localStorage) {
-            throw Error('No local storage available!');
+            throw Error("No local storage available!");
         }
         localStorage.setItem(key, value);
     }

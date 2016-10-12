@@ -1,27 +1,27 @@
-var Event = require('./Event');
-var Events = require('../core_modules/Events');
+var EventUtil = require("./EventUtil");
+var Events = require("../core_modules/Events");
 
 var config = {};
 
 module.exports = {
-    'SpilSDK':{
-        refreshConfig: function(callback) {
-            Event.sendEvent('requestConfig', {}, function(response_data){
-                config = response_data.data;
-                Events.publish('onConfigUpdated', config);
+    "SpilSDK": {
+        refreshConfig: function (callback) {
+            EventUtil.sendEvent("requestConfig", {}, function (responseData) {
+                config = responseData.data;
+                Events.publish("onConfigUpdated", config);
                 if (callback) {
                     callback(data);
                 }
             });
         },
-        getConfigAll: function() {
+        getConfigAll: function () {
             return config;
         },
-        getConfigValue: function(key) {
+        getConfigValue: function (key) {
             return config[key];
         },
-        onConfigUpdated:function(callback){
-            Events.subscribe('onConfigUpdated', callback);
+        onConfigUpdated: function (callback) {
+            Events.subscribe("onConfigUpdated", callback);
         }
     }
 };
