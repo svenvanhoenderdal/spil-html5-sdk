@@ -66,6 +66,9 @@ module.exports = {
         sendEvent: sendEvent,
         sendCustomEvent: function (eventName, data, callback) {
             sendEvent(eventName, data, callback);
+        },
+        getUuid: function () {
+            return Utils.getUuid();
         }
     }
 };

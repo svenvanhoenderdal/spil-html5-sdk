@@ -1,5 +1,7 @@
-function Entry(entryData, _gameData) {
-    this.gameData = _gameData;
+var GameData;
+
+function Entry(entryData) {
+    GameData = require("../../modules/GameData").SpilSDK;
     this.bundleId = entryData.bundleId;
     this.label = entryData.label;
     this.position = entryData.position;
@@ -14,7 +16,7 @@ Entry.prototype.getPosition = function () {
     return this.position;
 };
 Entry.prototype.getBundle = function () {
-    return this.gameData.getBundle(this.bundleId);
+    return GameData.getGameData().getBundle(this.bundleId);
 };
 
 module.exports = Entry;
