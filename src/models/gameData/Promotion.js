@@ -1,6 +1,8 @@
-var BundlePrice = require("./BundlePrice");
+var GameData;
 
-function Promotion(promotionData, _gameData) {
+function Promotion(promotionData) {
+    var BundlePrice = require("./BundlePrice");
+    GameData = require("../../modules/GameData");
     this.bundleId = promotionData.bundleId;
     this.amount = promotionData.amount;
     this.discount = promotionData.discount;
@@ -10,7 +12,7 @@ function Promotion(promotionData, _gameData) {
     this.prices = [];
     for (var i = 0; i < promotionData.prices.length; i++) {
         var price = promotionData.prices[i];
-        this.prices.push(new BundlePrice(price, _gameData));
+        this.prices.push(new BundlePrice(price));
     }
 }
 Promotion.prototype.getBundleId = function () {
@@ -32,7 +34,7 @@ Promotion.prototype.getEndDate = function () {
     return this.endDate;
 };
 Promotion.prototype.getBundle = function () {
-    return this.gameData.getBundle(this.bundleId);
+    return GameData.SpilSDK.getGameData().getBundle(this.bundleId);
 };
 
 module.exports = Promotion;

@@ -1,5 +1,7 @@
-function BundleItem(bundleItemData, _gameData) {
-    this.gameData = _gameData;
+var GameData;
+
+function BundleItem(bundleItemData) {
+    GameData = require("../../modules/GameData").SpilSDK;
     this.id = bundleItemData.id;
     this.amount = bundleItemData.amount;
 }
@@ -10,7 +12,7 @@ BundleItem.prototype.getAmount = function () {
     return this.amount;
 };
 BundleItem.prototype.getItem = function () {
-    return this.gameData.getItem(this.id);
+    return GameData.getGameData().getItem(this.id);
 };
 
 module.exports = BundleItem;

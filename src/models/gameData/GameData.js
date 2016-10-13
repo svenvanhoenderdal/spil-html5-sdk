@@ -1,10 +1,10 @@
-var Item = require("./Item");
-var Bundle = require("./Bundle");
-var Currency = require("./Currency");
-var Promotion = require("./Promotion");
-var Tab = require("./Tab");
-
 function GameData(gameData) {
+    var Item = require("./Item");
+    var Bundle = require("./Bundle");
+    var Currency = require("./Currency");
+    var Promotion = require("./Promotion");
+    var Tab = require("./Tab");
+
     this.items = [];
     this.itemsDict = {};
     for (var i = 0; i < gameData.items.length; i++) {
@@ -15,7 +15,7 @@ function GameData(gameData) {
     this.bundles = [];
     this.bundlesDict = {};
     for (i = 0; i < gameData.bundles.length; i++) {
-        var bundle = new Bundle(gameData.bundles[i], this);
+        var bundle = new Bundle(gameData.bundles[i]);
         this.bundles.push(bundle);
         this.bundlesDict[bundle.getId()] = bundle;
     }
@@ -29,13 +29,13 @@ function GameData(gameData) {
     this.promotions = [];
     this.promotionsDict = {};
     for (i = 0; i < gameData.promotions.length; i++) {
-        var promotion = new Promotion(gameData.promotions[i], this);
+        var promotion = new Promotion(gameData.promotions[i]);
         this.promotions.push(promotion);
         this.promotionsDict[promotion.getBundleId()] = promotion;
     }
     this.shop = [];
     for (i = 0; i < gameData.shop.length; i++) {
-        var tab = new Tab(gameData.shop[i], this);
+        var tab = new Tab(gameData.shop[i]);
         this.shop.push(tab);
     }
 }
