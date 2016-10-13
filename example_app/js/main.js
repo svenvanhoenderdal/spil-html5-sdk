@@ -5,7 +5,7 @@ $(function(){
         SpilSDK.onConfigUpdated(reloadGameConfig);
 
         initgame();
-    }, 'stg')
+    }, 'prd')
 
     //$('loadingscreen').show();
 

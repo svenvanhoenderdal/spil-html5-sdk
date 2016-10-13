@@ -1,7 +1,6 @@
-var Entry = require("./Entry");
-
 function Tab(tabData) {
-    this.entries = []
+    var Entry = require("./Entry");
+    this.entries = [];
     for (var i = 0; i < tabData.entries.length; i++) {
         var entry = tabData.entries[i];
         this.entries.push(new Entry(entry));

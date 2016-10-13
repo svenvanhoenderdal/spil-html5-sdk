@@ -1,7 +1,7 @@
 var Item = require("../gameData/Item");
-var GameData = require("../../modules/GameData").SpilSDK;
 
 function PlayerItem(playerItemData) {
+    var GameData = require("../../modules/GameData").SpilSDK;
     Item.call(this, playerItemData);
     var item = GameData.getGameData().getItem(this.id);
     this.name = item.getName();

@@ -1,7 +1,6 @@
-var BundlePrice = require("./BundlePrice");
-var BundleItem = require("./BundleItem");
-
 function Bundle(bundleData) {
+    var BundlePrice = require("./BundlePrice");
+    var BundleItem = require("./BundleItem");
     this.id = bundleData.id;
     this.name = bundleData.name;
     this.prices = [];
@@ -15,16 +14,16 @@ function Bundle(bundleData) {
         this.items.push(new BundleItem(item));
     }
 }
-Bundle.prototype.getId = function() {
+Bundle.prototype.getId = function () {
     return this.id;
 };
-Bundle.prototype.getName = function(){
+Bundle.prototype.getName = function () {
     return this.name;
 };
-Bundle.prototype.getPrices = function(){
+Bundle.prototype.getPrices = function () {
     return this.prices;
 };
-Bundle.prototype.getItems = function(){
+Bundle.prototype.getItems = function () {
     return this.items;
 };
 

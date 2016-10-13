@@ -1,6 +1,5 @@
-var PlayerItem = require("./PlayerItem");
-
 function Inventory(inventoryData) {
+    var PlayerItem = require("./PlayerItem");
     this.items = [];
     this.itemsDict = {};
     for (var i = 0; i < inventoryData.items.length; i++) {
@@ -24,16 +23,19 @@ Inventory.prototype.getOffset = function () {
 Inventory.prototype.setOffset = function (offset) {
     this.offset = offset;
 };
-Inventory.prototype.getLogic = function() {
+Inventory.prototype.getLogic = function () {
     return this.logic;
+};
+Inventory.prototype.setLogic = function (logic) {
+    this.logic = logic;
 };
 Inventory.prototype.addItem = function (item) {
     this.items.push(item);
     this.itemsDict[item.getId()] = item;
 };
-Inventory.prototype.remoteItem = function (itemId) {
-    var item = this.itemsDict[itemId];
-    var index = this.items.indexOf(item);
+Inventory.prototype.removeItem = function (itemId) {
+    var item = this.itemsDict[itemId],
+        index = this.items.indexOf(item);
     if (index > -1) {
         this.items.splice(index, 1);
     }
