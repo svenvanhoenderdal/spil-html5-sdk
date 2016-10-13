@@ -1,4 +1,4 @@
-var Item = require('../gameData/Item.js');
+var Item = require("../gameData/Item");
 
 function PlayerItem(playerItemData, gameData) {
     Item.call(this, playerItemData);
@@ -12,13 +12,13 @@ function PlayerItem(playerItemData, gameData) {
 PlayerItem.prototype = Object.create(Item.prototype);
 PlayerItem.prototype.constructor = PlayerItem;
 
-PlayerItem.prototype.getAmount = function(){
+PlayerItem.prototype.getAmount = function () {
     return this.amount;
 };
-PlayerItem.prototype.getDelta = function(){
+PlayerItem.prototype.getDelta = function () {
     return this.delta;
 };
-PlayerItem.prototype.getValue = function(){
+PlayerItem.prototype.getValue = function () {
     return this.value;
 };
 

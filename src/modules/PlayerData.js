@@ -1,34 +1,34 @@
-var Event = require('./Event.js'),
-    UserProfile = require('../models/playerData/UserProfile.js'),
-    GameData = require('./GameData.js').SpilSDK,
+var EventUtil = require("./EventUtil");
+var UserProfile = require("../models/playerData/UserProfile");
+var GameData = require("./GameData").SpilSDK,
     userProfile;
 
 function getUserProfile() {
     if (userProfile) {
         return userProfile;
     }
-    userProfile = new UserProfile({'wallet': {'currencies':[], 'offset':0}, 'inventory': {'items':[], 'offset': 0}});
+    userProfile = new UserProfile({"wallet": {"currencies": [], "offset": 0}, "inventory": {"items": [], "offset": 0}});
     return userProfile;
-
 }
 
 module.exports = {
-    'SpilSDK': {
-        requestPlayerData: function(callback) {
-            Event.sendEvent('requestPlayerData', {'wallet': {'currencies':[], 'offset':0}, 'inventory': {'items':[], 'offset': 0}}, function(response_data){
-                userProfile = new UserProfile(response_data.data, GameData.getGameData());
+    "SpilSDK": {
+        requestPlayerData: function (callback) {
+            data = {"wallet": {"currencies": [], "offset": 0}, "inventory": {"items": [], "offset": 0}};
+            EventUtil.sendEvent("requestPlayerData", data, function (responseData) {
+                userProfile = new UserProfile(responseData.data, GameData.getGameData());
                 if (callback) {
                     callback(userProfile);
                 }
             });
         },
-        getWallet: function() {
+        getWallet: function () {
             return getUserProfile().getWallet();
         },
-        getInventory: function() {
+        getInventory: function () {
             return getUserProfile().getInventory();
         },
-        getUserProfile: function() {
+        getUserProfile: function () {
             return getUserProfile();
         }
     }

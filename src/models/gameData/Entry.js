@@ -4,16 +4,16 @@ function Entry(entryData, _gameData) {
     this.label = entryData.label;
     this.position = entryData.position;
 }
-Entry.prototype.getBundleId = function() {
+Entry.prototype.getBundleId = function () {
     return this.bundleId;
 };
-Entry.prototype.getLabel = function(){
+Entry.prototype.getLabel = function () {
     return this.label;
 };
-Entry.prototype.getPosition = function(){
+Entry.prototype.getPosition = function () {
     return this.position;
 };
-Entry.prototype.getBundle = function(){
+Entry.prototype.getBundle = function () {
     return this.gameData.getBundle(this.bundleId);
 };
 

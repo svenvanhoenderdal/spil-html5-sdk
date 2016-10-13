@@ -1,4 +1,4 @@
-var PlayerCurrency = require('./PlayerCurrency');
+var PlayerCurrency = require("./PlayerCurrency");
 
 function Wallet(walletData, gameData) {
     this.currencies = [];
@@ -12,16 +12,16 @@ function Wallet(walletData, gameData) {
     this.logic = walletData.logic;
 }
 
-Wallet.prototype.getCurrencies = function(){
+Wallet.prototype.getCurrencies = function () {
     return this.currencies;
 };
-Wallet.prototype.getCurrency = function(currencyId){
+Wallet.prototype.getCurrency = function (currencyId) {
     return this.currenciesDict[currencyId] || null;
 };
-Wallet.prototype.getOffset = function(){
+Wallet.prototype.getOffset = function () {
     return this.offset;
 };
-Wallet.prototype.getLogic = function(){
+Wallet.prototype.getLogic = function () {
     return this.logic;
 };
 

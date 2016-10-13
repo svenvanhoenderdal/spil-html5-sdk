@@ -1,13 +1,13 @@
-var ScriptLoader = require('./ScriptLoader.js');
+var ScriptLoader = require("./ScriptLoader");
 
-module.exports = function(actions, onFinishCallback){
+module.exports = function (actions, onFinishCallback) {
 
     var counter = 0;
 
-    function loadCallback(){
+    function loadCallback() {
         counter--;
 
-        if(counter == 0){
+        if (counter === 0) {
             onFinishCallback();
         }
     }
@@ -19,14 +19,14 @@ module.exports = function(actions, onFinishCallback){
         method.apply(this, args);
     }
 
-    for(var i=0;i<actions.length;i++){
+    for (var i = 0; i < actions.length; i++) {
 
-        var preload_config = actions[i];
+        var preloadConfig = actions[i];
 
-        if(preload_config.action == 'loadscript'){
-            preloadData(ScriptLoader, preload_config.args);
-        }else{
-            preloadData(preload_config.action, preload_config.args);
+        if (preloadConfig.action === "loadscript") {
+            preloadData(ScriptLoader, preloadConfig.args);
+        }else {
+            preloadData(preloadConfig.action, preloadConfig.args);
         }
     }
 };

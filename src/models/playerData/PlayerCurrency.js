@@ -1,4 +1,4 @@
-var Currency = require('../gameData/Currency.js');
+var Currency = require("../gameData/Currency");
 
 function PlayerCurrency(playerCurrencyData, gameData) {
     Currency.call(this, playerCurrencyData);
@@ -11,10 +11,10 @@ function PlayerCurrency(playerCurrencyData, gameData) {
 PlayerCurrency.prototype = Object.create(Currency.prototype);
 PlayerCurrency.prototype.constructor = PlayerCurrency;
 
-PlayerCurrency.prototype.getCurrentBalance = function(){
+PlayerCurrency.prototype.getCurrentBalance = function () {
     return this.currentBalance;
 };
-PlayerCurrency.prototype.getDelta = function(){
+PlayerCurrency.prototype.getDelta = function () {
     return this.delta;
 };
 

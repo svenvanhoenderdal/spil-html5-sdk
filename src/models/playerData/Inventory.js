@@ -1,4 +1,4 @@
-var PlayerItem = require('./PlayerItem');
+var PlayerItem = require("./PlayerItem");
 
 function Inventory(inventoryData, gameData) {
     this.items = [];
@@ -12,16 +12,16 @@ function Inventory(inventoryData, gameData) {
     this.logic = inventoryData.logic;
 }
 
-Inventory.prototype.getItems = function(){
+Inventory.prototype.getItems = function () {
     return this.items;
 };
-Inventory.prototype.getItem = function(itemId){
+Inventory.prototype.getItem = function (itemId) {
     return this.itemsDict[itemId] || null;
 };
-Inventory.prototype.getOffset = function(){
+Inventory.prototype.getOffset = function () {
     return this.offset;
 };
-Inventory.prototype.getLogic = function(){
+Inventory.prototype.getLogic = function () {
     return this.logic;
 };
 

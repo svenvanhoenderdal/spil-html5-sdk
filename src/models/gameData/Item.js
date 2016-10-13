@@ -4,16 +4,16 @@ function Item(itemData) {
     this.initialValue = itemData.initialValue;
     this.type = itemData.type;
 }
-Item.prototype.getId = function() {
+Item.prototype.getId = function () {
     return this.id;
 };
-Item.prototype.getName = function(){
+Item.prototype.getName = function () {
     return this.name;
 };
-Item.prototype.getInitialValue = function(){
+Item.prototype.getInitialValue = function () {
     return this.initialValue;
 };
-Item.prototype.getType = function(){
+Item.prototype.getType = function () {
     return this.type;
 };
 

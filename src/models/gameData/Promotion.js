@@ -1,4 +1,4 @@
-var BundlePrice = require('./BundlePrice');
+var BundlePrice = require("./BundlePrice");
 
 function Promotion(promotionData, _gameData) {
     this.bundleId = promotionData.bundleId;
@@ -7,32 +7,32 @@ function Promotion(promotionData, _gameData) {
     this.startDate = promotionData.startDate;
     this.endDate = promotionData.endDate;
 
-    this.prices = []
+    this.prices = [];
     for (var i = 0; i < promotionData.prices.length; i++) {
-        var price = promotionData.prices[i]
-        this.prices.push(new BundlePrice(price, _gameData))
+        var price = promotionData.prices[i];
+        this.prices.push(new BundlePrice(price, _gameData));
     }
 }
-Promotion.prototype.getBundleId = function() {
+Promotion.prototype.getBundleId = function () {
     return this.bundleId;
 };
-Promotion.prototype.getAmount = function(){
+Promotion.prototype.getAmount = function () {
     return this.amount;
 };
-Promotion.prototype.getPrices = function(){
+Promotion.prototype.getPrices = function () {
     return this.prices;
 };
-Promotion.prototype.getDiscount = function(){
+Promotion.prototype.getDiscount = function () {
     return this.discount;
 };
-Promotion.prototype.getStartDate = function(){
+Promotion.prototype.getStartDate = function () {
     return this.startDate;
 };
-Promotion.prototype.getEndDate = function(){
+Promotion.prototype.getEndDate = function () {
     return this.endDate;
 };
-Promotion.prototype.getBundle = function(){
-    return this.gameData.getBundle(this.bundleId);;
+Promotion.prototype.getBundle = function () {
+    return this.gameData.getBundle(this.bundleId);
 };
 
 module.exports = Promotion;
