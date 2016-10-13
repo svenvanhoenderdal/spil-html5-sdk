@@ -1,9 +1,9 @@
-var EventUtil = require("./EventUtil"),
+var ErrorCodes = require("../core_modules/ErrorCodes"),
+    EventUtil = require("./EventUtil"),
     UserProfile = require("../models/playerData/UserProfile"),
     UpdatedData = require("../models/playerData/UpdatedData"),
     Wallet = require("../models/playerData/Wallet"),
     Inventory = require("../models/playerData/Inventory"),
-    PlayerItem = require("../models/playerData/PlayerItem"),
     userProfile;
 
 function getUserProfile() {
@@ -122,6 +122,12 @@ function processInventory(oldInventory, newInventory) {
     return updated;
 }
 
+var playerDataCallbacks = {
+    playerDataError: function (error) {},
+    playerDataAvailable: function () {},
+    playerDataUpdated: function (reason, updatedData) {}
+};
+
 module.exports = {
     "SpilSDK": {
         requestPlayerData: function (callback) {
@@ -151,14 +157,26 @@ module.exports = {
             });
         },
         getWallet: function () {
-            return getUserProfile().getWallet();
+            var userProf = getUserProfile();
+            if (userProf) {
+                //@TODO set initialize value for wallet
+                return userProf.getWallet();
+            }else {
+                playerDataCallbacks.playerDataError(ErrorCodes.WalletNotFound);
+            }
         },
         getInventory: function () {
             return getUserProfile().getInventory();
         },
         getUserProfile: function () {
             return getUserProfile();
+        },
+        setPlayerDataCallbacks: function (listeners) {
+            for (var listenerName in listeners) {
+                playerDataCallbacks[listenerName] = listeners[listenerName];
+            }
         }
+
     }
 };
 

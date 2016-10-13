@@ -5,7 +5,16 @@ $(function(){
         SpilSDK.onConfigUpdated(reloadGameConfig);
 
         initgame();
-    }, 'prd')
+
+        SpilSDK.setPlayerDataCallbacks({
+            playerDataError:function(error){
+                console.log(error);
+            }
+        });
+
+        //SpilSDK.getWallet();
+
+    }, 'prd');
 
     //$('loadingscreen').show();
 
