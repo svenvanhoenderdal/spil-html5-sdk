@@ -1,10 +1,10 @@
 var PlayerItem = require("./PlayerItem");
 
-function Inventory(inventoryData, gameData) {
+function Inventory(inventoryData) {
     this.items = [];
     this.itemsDict = {};
     for (var i = 0; i < inventoryData.items.length; i++) {
-        var item = new PlayerItem(inventoryData.items[i], gameData);
+        var item = new PlayerItem(inventoryData.items[i]);
         this.items.push(item);
         this.itemsDict[item.getId()] = item;
     }
@@ -21,8 +21,24 @@ Inventory.prototype.getItem = function (itemId) {
 Inventory.prototype.getOffset = function () {
     return this.offset;
 };
-Inventory.prototype.getLogic = function () {
+Inventory.prototype.setOffset = function (offset) {
+    this.offset = offset;
+};
+Inventory.prototype.getLogic = function() {
     return this.logic;
 };
+Inventory.prototype.addItem = function (item) {
+    this.items.push(item);
+    this.itemsDict[item.getId()] = item;
+};
+Inventory.prototype.remoteItem = function (itemId) {
+    var item = this.itemsDict[itemId];
+    var index = this.items.indexOf(item);
+    if (index > -1) {
+        this.items.splice(index, 1);
+    }
+    delete this.itemsDict[itemId];
+};
+
 
 module.exports = Inventory;

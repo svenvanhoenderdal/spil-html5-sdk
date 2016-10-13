@@ -1,7 +1,6 @@
 $(function(){
     SpilSDK('com.spilgames.slot', '0.0.2', function(){
         console.log('sdk ready');
-        console.log(SpilSDK)
         SpilSDK.onPackagesUpdated(loadPackages);
         SpilSDK.onConfigUpdated(reloadGameConfig);
 

@@ -34,6 +34,7 @@ module.exports = function(grunt) {
             "src/modules/Payments.js",
             "src/modules/PlayerData.js"
         ];
+    var sources = ['src/*.js', 'src/*/*.js', 'src/*/*/*.js'];
 
     grunt.initConfig({
         jshint: {
@@ -42,7 +43,8 @@ module.exports = function(grunt) {
                 eqeqeq: true,
                 eqnull: true,
                 browser: true,
-                expr: true
+                expr: true,
+                camelcase: true
             },
             source: ['src/*.js','src/*/*.js','src/*/*/*.js']
         },
