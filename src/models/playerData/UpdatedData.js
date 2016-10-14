@@ -12,7 +12,7 @@ function UpdatedData(updatedData) {
     }
     this.items = [];
     this.itemsDict = {};
-    if (updatedData && "items" in updatedData) {
+    if (updatedData && updatedData.hasOwnProperty("items")) {
         for (var j = 0; j < updatedData.items.length; j++) {
             var item = new PlayerItem(updatedData.items[j]);
             this.items.push(item);
