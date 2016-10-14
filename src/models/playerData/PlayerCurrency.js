@@ -6,6 +6,7 @@ function PlayerCurrency(playerCurrencyData) {
     var currency = GameData.getGameData().getCurrency(this.id);
     this.name = currency.getName();
     this.type = currency.getType();
+    this.initialValue = currency.getInitialValue();
     this.currentBalance = playerCurrencyData.currentBalance;
     this.delta = playerCurrencyData.delta;
 }

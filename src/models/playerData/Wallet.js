@@ -34,5 +34,13 @@ Wallet.prototype.addCurrency = function (currency) {
     this.currencies.push(currency);
     this.currenciesDict[currency.getId()] = currency;
 };
+Wallet.prototype.removeCurrency = function (currencyId) {
+    var currency = this.currenciesDict[currencyId],
+        index = this.currencies.indexOf(currency);
+    if (index > -1) {
+        this.currencies.splice(index, 1);
+    }
+    delete this.currenciesDict[currencyId];
+};
 
 module.exports = Wallet;

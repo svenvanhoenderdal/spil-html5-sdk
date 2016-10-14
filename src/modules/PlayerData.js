@@ -4,6 +4,8 @@ var ErrorCodes = require("../core_modules/ErrorCodes"),
     UpdatedData = require("../models/playerData/UpdatedData"),
     Wallet = require("../models/playerData/Wallet"),
     Inventory = require("../models/playerData/Inventory"),
+    PlayerItem = require("../models/playerData/PlayerItem"),
+    GameData = require("./GameData").SpilSDK,
     userProfile;
 
 function getUserProfile() {
@@ -13,6 +15,7 @@ function getUserProfile() {
     userProfile = new UserProfile(defaultPlayerData);
     return userProfile;
 }
+
 function updateUserProfile(updatedUserProfile) {
     userProfile = updatedUserProfile;
 }
@@ -63,13 +66,6 @@ function processWallet(oldWallet, newWallet) {
         for (i = 0; i < receivedCurrencies.length; i++) {
             var receivedCurrency = receivedCurrencies[i],
                 storedCurrency = oldWallet.getCurrency(receivedCurrency.getId());
-
-            // Do this at a later stage (getUserProfile)
-            // if (storedCurrency == null) {
-            //     oldWallet.addCurrency(receivedCurrency)
-            //     updated = true;
-            //     continue;
-            // }
 
             var newBalance = storedCurrency.getCurrentBalance() + receivedCurrency.getDelta();
             newBalance = newBalance >= 0 ? newBalance : 0;
@@ -122,6 +118,41 @@ function processInventory(oldInventory, newInventory) {
     return updated;
 }
 
+function updateInventoryWithItem(itemId, amount, action, reason) {
+    var userProfile = getUserProfile();
+    if (!userprofile) {
+        //PlayerDataError
+        return
+    }
+
+    var item = GameData.getGameData().getItem(itemId);
+    if (item == null || amount == undefined || action == undefined || reason == undefined) {
+        // playerDataError
+        return
+    }
+    var playerItem = new PlayerItem({
+        id: item.getId(),
+        delta: amount,
+        amount: amount
+    });
+    var inventoryItem = userProfile.getInventory ().getItem(itemId);
+    if (inventoryItem) {
+        var inventoryItemAmount = inventoryItem.getAmount();
+        inventoryItemAmount += (action === "add" ? amount : -amount);
+        inventoryItem.setDelta(amount);
+        inventoryItem.setAmount(inventoryItem);
+    } else {
+        if (action === "add") {
+            userProfile.getInventory().addItem(playerItem);
+        } else if (action === "substract") {
+            // playerDataError - ItemAmountToLow
+        }
+    }
+    updateUserProfile(userprofile);
+    UpdatedData updatedData = new UpdatedData();
+    updatedData.addItem(playerItem);
+}
+
 var playerDataCallbacks = {
     playerDataError: function (error) {},
     playerDataAvailable: function () {},
@@ -159,7 +190,6 @@ module.exports = {
         getWallet: function () {
             var userProf = getUserProfile();
             if (userProf) {
-                //@TODO set initialize value for wallet
                 return userProf.getWallet();
             }else {
                 playerDataCallbacks.playerDataError(ErrorCodes.WalletNotFound);
@@ -171,6 +201,12 @@ module.exports = {
         getUserProfile: function () {
             return getUserProfile();
         },
+        addItemToInventory: function(itemId, amount, reason) {
+            updateInventoryWithItem(itemId, amount, reason);
+        },
+        subtractItemFromInventory: function(itemId, amount, reason) {
+            updateInventoryWithItem(itemId, -amount, reason);
+        },
         setPlayerDataCallbacks: function (listeners) {
             for (var listenerName in listeners) {
                 playerDataCallbacks[listenerName] = listeners[listenerName];
@@ -179,8 +215,6 @@ module.exports = {
 
     }
 };
-
-
 
 var defaultPlayerData = {
     "inventory": {
