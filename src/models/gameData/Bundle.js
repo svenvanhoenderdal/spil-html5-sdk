@@ -26,5 +26,20 @@ Bundle.prototype.getPrices = function () {
 Bundle.prototype.getItems = function () {
     return this.items;
 };
+Bundle.prototype.getObject = function () {
+    result = {
+        id: this.id,
+        name: this.name,
+        prices: [],
+        items: []
+    };
+    for (var i = 0; i < this.prices.length; i++) {
+        result.prices.push(this.prices[i].getObject());
+    }
+    for (i = 0; i < this.items.length; i++) {
+        result.items.push(this.items[i].getObject());
+    }
+    return result;
+};
 
 module.exports = Bundle;

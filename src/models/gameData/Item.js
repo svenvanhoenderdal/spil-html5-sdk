@@ -16,5 +16,10 @@ Item.prototype.getInitialValue = function () {
 Item.prototype.getType = function () {
     return this.type;
 };
+Item.prototype.getObject = function () {
+    return {
+        id: this.id
+    };
+};
 
 module.exports = Item;

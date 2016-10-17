@@ -14,5 +14,11 @@ BundlePrice.prototype.getValue = function () {
 BundlePrice.prototype.getCurrency = function () {
     return GameData.getGameData().getCurrency(this.currencyId);
 };
+BundlePrice.prototype.getObject = function () {
+    return {
+        currencyId: this.currencyId,
+        value: this.value
+    };
+};
 
 module.exports = BundlePrice;

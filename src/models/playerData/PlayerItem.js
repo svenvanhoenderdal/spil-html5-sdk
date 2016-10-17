@@ -16,8 +16,14 @@ PlayerItem.prototype.constructor = PlayerItem;
 PlayerItem.prototype.getAmount = function () {
     return this.amount;
 };
+PlayerItem.prototype.setAmount = function (amount) {
+    this.amount = amount;
+};
 PlayerItem.prototype.getDelta = function () {
     return this.delta;
+};
+PlayerItem.prototype.setDelta = function (delta) {
+    this.delta = delta;
 };
 PlayerItem.prototype.getValue = function () {
     return this.value;
