@@ -18,7 +18,7 @@ Wallet.prototype.setCurrencies = function (currencies) {
         this.currencies.push(currency);
         this.currenciesDict[currency.getId()] = currency;
     }
-}
+};
 Wallet.prototype.getCurrency = function (currencyId) {
     return this.currenciesDict[currencyId] || null;
 };

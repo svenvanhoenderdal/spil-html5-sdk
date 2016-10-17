@@ -5,7 +5,15 @@ var ErrorCodes = require("../core_modules/ErrorCodes"),
     Wallet = require("../models/playerData/Wallet"),
     Inventory = require("../models/playerData/Inventory"),
     PlayerItem = require("../models/playerData/PlayerItem"),
-    userProfile;
+    userProfile,
+    lastStoredReason = "",
+    timeoutObject = false,
+    lastUpdatedData,
+    playerDataCallbacks = {
+        playerDataError: function (error) {},
+        playerDataAvailable: function () {},
+        playerDataUpdated: function (reason, updatedData) {}
+    };
 
 function getUserProfile() {
     if (userProfile) {
@@ -227,13 +235,14 @@ function updateInventoryWithBundle(bundleId, reason) {
 function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingValue) {
     var userProfile = getUserProfile(),
         result = {
-        wallet: {
-            offset: userProfile.getWallet().getOffset()
-        },
-        inventory: {
-            offset: userProfile.getInventory().getOffset()
-        }
-    };
+            wallet: {
+                offset: userProfile.getWallet().getOffset()
+            },
+            inventory: {
+                offset: userProfile.getInventory().getOffset()
+            }
+        };
+
     if (updatedData.getCurrencies().length > 0) {
         result.wallet.currencies = [];
         for (var i = 0; i < updatedData.getCurrencies().length; i++) {
@@ -259,20 +268,6 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
         result[reportingKey] = reportingValue;
     }
     updatePlayerData(result);
-}
-
-var lastStoredReason = "";
-var timeoutObject = false;
-
-function timeoutSend() {
-    sendEvent(lastStoredReason);
-
-    lastStoredReason = "";
-    timeoutObject = false;
-}
-
-function sendEvent(reason) {
-    console.log("send event reason: " + reason);
 }
 
 function mutateWallet(currencyId, delta, reason) {
@@ -302,30 +297,34 @@ function mutateWallet(currencyId, delta, reason) {
 
     var updatedDelta = delta + currency.getDelta();
 
-    if (updatedDelta == 0) {
+    if (updatedDelta === 0) {
         updatedDelta = delta;
     }
 
     currency.setDelta(updatedDelta);
     currency.setCurrentBalance(updatedBalance);
 
-    if (userProf.getWallet().getLogic() == "CLIENT") {
+    if (userProf.getWallet().getLogic() === "CLIENT") {
 
         var updatedData = new UpdatedData({"currencies": [currency]});
 
-        if (lastStoredReason == reason || lastStoredReason == "") {
+
+        if (lastStoredReason === reason || lastStoredReason === "") {
 
             playerDataCallbacks.playerDataUpdated(reason, updatedData);
 
-            if (timeoutObject == false) {
+            if (timeoutObject === false) {
                 lastStoredReason = reason;
+                lastUpdatedData = updatedData;
 
-                timeoutObject = setTimeout(timeoutSend, 5000);
+                timeoutObject = setTimeout(sendUpdatePlayerDataEvent.bind(null, updatedData, reason), 5000);
             }else {
                 //unregister current timeout object
+                //and register a new one
                 clearTimeout(timeoutObject);
+                lastUpdatedData = updatedData;
 
-                timeoutObject = setTimeout(timeoutSend, 5000);
+                timeoutObject = setTimeout(sendUpdatePlayerDataEvent.bind(null, updatedData, reason), 5000);
             }
 
         }else {
@@ -333,25 +332,18 @@ function mutateWallet(currencyId, delta, reason) {
 
             clearTimeout(timeoutObject);
             timeoutObject = false;
-            sendEvent(lastReason);
+            sendUpdatePlayerDataEvent(lastUpdatedData, lastReason);
 
-            sendEvent(reason);
+            sendUpdatePlayerDataEvent(updatedData, reason);
             lastStoredReason = reason;
+            lastUpdatedData = updatedData;
 
             playerDataCallbacks.playerDataUpdated(reason, updatedData);
+
         }
 
     }
 }
-
-
-
-var playerDataCallbacks = {
-    playerDataError: function (error) {},
-    playerDataAvailable: function () {},
-    playerDataUpdated: function (reason, updatedData) {}
-};
-
 
 function updatePlayerData(data, callback) {
     EventUtil.sendEvent("updatePlayerData", data, function (responseData) {
@@ -360,7 +352,7 @@ function updatePlayerData(data, callback) {
             callback(userProfile);
         }
     });
-};
+}
 
 var playerDataUpdateReasons = {
     RewardAds: "Reward Ads",
@@ -432,7 +424,7 @@ module.exports = {
                 return;
             }
 
-            mutateWallet(currencyId, delta, reason)
+            mutateWallet(currencyId, parseFloat(delta), reason);
         },
         subtractCurrencyFromWallet: function (currencyId, delta, reason) {
 
@@ -441,7 +433,7 @@ module.exports = {
                 return;
             }
 
-            mutateWallet(currencyId, -delta, reason)
+            mutateWallet(currencyId, parseFloat(-delta), reason);
         }
 
     }

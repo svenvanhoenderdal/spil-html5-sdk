@@ -1,6 +1,9 @@
+var PlayerCurrency,
+    PlayerItem;
+
 function UpdatedData(updatedData) {
-    var PlayerCurrency = require("./PlayerCurrency");
-    var PlayerItem = require("./PlayerItem");
+    PlayerCurrency = require("./PlayerCurrency");
+    PlayerItem = require("./PlayerItem");
 
     this.currencies = [];
     this.currenciesDict = {};
