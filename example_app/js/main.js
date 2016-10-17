@@ -1,20 +1,4 @@
 $(function(){
-    SpilSDK('com.spilgames.slot', '0.0.2', function(){
-        console.log('sdk ready');
-        SpilSDK.onPackagesUpdated(loadPackages);
-        SpilSDK.onConfigUpdated(reloadGameConfig);
-
-        initgame();
-
-        SpilSDK.setPlayerDataCallbacks({
-            playerDataError:function(error){
-                console.log(error);
-            }
-        });
-
-        //SpilSDK.getWallet();
-
-    }, 'prd');
 
     //$('loadingscreen').show();
 
@@ -79,5 +63,22 @@ $(function(){
             }
             tabTemplate.removeClass('hidden');
         }
-    }
+    };
+
+    SpilSDK('com.spilgames.slot', '0.0.2', function(){
+        console.log('sdk ready');
+        SpilSDK.onPackagesUpdated(loadPackages);
+        SpilSDK.onConfigUpdated(reloadGameConfig);
+
+        initgame();
+
+        SpilSDK.setPlayerDataCallbacks({
+            playerDataError:function(error){
+                console.log(error);
+            }
+        });
+
+        //SpilSDK.getWallet();
+
+    }, 'prd');
 });

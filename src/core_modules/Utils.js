@@ -101,6 +101,7 @@ module.exports = {
         }
         if (currentTime - lastEventSent > 900) {
             sessionId = this.generateUuid();
+            timestampOpened = currentTime;
         }
         lastEventSent = currentTime;
         return sessionId;

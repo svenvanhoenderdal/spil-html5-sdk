@@ -19,7 +19,7 @@ GameData.prototype.getItems = function () {
 GameData.prototype.setItems = function (items) {
     this.items = [];
     this.itemsDict = {};
-    if (!items || !items.length){
+    if (!items || !items.length) {
         return;
     }
     for (var i = 0; i < items.length; i++) {
@@ -57,7 +57,7 @@ GameData.prototype.setCurrencies = function (currencies) {
         this.currencies.push(currency);
         this.currenciesDict[currency.getId()] = currency;
     }
-}
+};
 GameData.prototype.getCurrency = function (currencyId) {
     return this.currenciesDict[currencyId] || null;
 };

@@ -14,5 +14,11 @@ BundleItem.prototype.getAmount = function () {
 BundleItem.prototype.getItem = function () {
     return GameData.getGameData().getItem(this.id);
 };
+BundleItem.prototype.getObject = function () {
+    return {
+        id: this.id,
+        amount: this.amount
+    };
+};
 
 module.exports = BundleItem;
