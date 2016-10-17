@@ -47,83 +47,10 @@
                     <ul id='package_list'></ul>
                 </div>
                 <div class="tab-pane fade" id="playerdata">
-
-                    <button id="getwallet" onclick="SpilSDK.getWallet()">SpilSDK.getWallet()</button>
-
                     <div>
                         <button id="getcurrencies">SpilSDK.getWallet()</button>
-
                         <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="width:400px;"></div>
-
-
                     </div>
-                    <script>
-                        $('#getcurrencies').click(function(){
-
-                            var currencies = SpilSDK.getWallet().currencies;
-
-
-
-                            var tempFn = doT.template(''+
-                                '<div class="panel panel-default">'+
-                                    '<div class="panel-heading" role="tab" id="panel_{{=it.id}}">'+
-                                        '<div class="panel-title" style="font-size:12px">'+
-                                            '<a role="button" data-toggle="collapse" href="#body_{{=it.id}}">{{=it.name}}} (id:{{=it.currencyId}})</a>'+
-                                            '<span class="badge pull-right" >{{=it.currentBalance}}</span>'+
-                                        '</div>'+
-                                    '</div>'+
-                                    '<div id="body_{{=it.id}}" class="panel-collapse collapse">'+
-                                        '<div class="panel-body">' +
-                                            '<span>{{=it.currentBalance}}</span>' +
-                                            '<div class="btn btn-primary decrement">-</div>' +
-                                            '<input type="amount" class="inputfield" value="1">'+
-                                            '<div class="btn btn-primary increment">+</div>' +
-                                            '<div class="btn btn-primary savewallet" data-id="{{=it.currencyId}}" >save</div>' +
-                                            '<div class="btn btn-primary test" data-id="{{=it.currencyId}}" >test</div>' +
-                                        '</div>'+
-                                    '</div>'+
-                                '</div>');
-
-                            $('#accordion').on('click','.decrement',function(){
-
-                                var valueField = $(this).parent().find('.inputfield');
-
-                                $(valueField).val(parseInt(valueField.val())-1);
-                            });
-
-                            $('#accordion').on('click','.increment',function(){
-
-                                var valueField = $(this).parent().find('.inputfield');
-
-                                $(valueField).val(parseInt(valueField.val())+1);
-                            });
-
-                            $('#accordion').on('click','.savewallet',function(){
-                                var valueField = $(this).parent().find('.inputfield');
-                                //currencyId, delta, reason
-                                SpilSDK.addCurrencyToWallet(parseInt($(this).data('id')),valueField.val(),'ItemBought');
-                            });
-                            $('#accordion').on('click','.test',function(){
-                                var valueField = $(this).parent().find('.inputfield');
-                                //currencyId, delta, reason
-                                SpilSDK.addCurrencyToWallet(parseInt($(this).data('id')),valueField.val(),'Kak');
-                            });
-
-                            for(var i=0;i<currencies.length;i++){
-                                var currency = currencies[i];
-
-                                $('#accordion').append(tempFn({
-                                    name:currency.name,
-                                    currentBalance:currency.currentBalance,
-                                    id:i,
-                                    currencyId:currency.id
-                                }))
-
-                            }
-
-                        });
-                    </script>
-
                 </div>
                 <div class="tab-pane fade" id="ingameshop">
                     <button id="ingameshop" onclick="refreshShop()">RefreshShop</button>
