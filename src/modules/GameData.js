@@ -81,3 +81,5 @@ var defaultGameData = {
     "currencies": [],
     "shop": []
 };
+
+

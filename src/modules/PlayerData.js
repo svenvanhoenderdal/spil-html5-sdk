@@ -261,11 +261,97 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
     updatePlayerData(result);
 }
 
+var lastStoredReason = "";
+var timeoutObject = false;
+
+function timeoutSend() {
+    sendEvent(lastStoredReason);
+
+    lastStoredReason = "";
+    timeoutObject = false;
+}
+
+function sendEvent(reason) {
+    console.log("send event reason: " + reason);
+}
+
+function mutateWallet(currencyId, delta, reason) {
+    var userProf = getUserProfile();
+    if (!userProf) {
+        playerDataCallbacks.playerDataError(ErrorCodes.WalletNotFound);
+        return;
+    }
+
+    var currency = getUserProfile().getWallet().getCurrency(currencyId);
+
+    if (!currency) {
+        playerDataCallbacks.playerDataError(ErrorCodes.CurrencyNotFound);
+        return;
+    }
+
+    if (currencyId < 0 || reason == null) {
+        playerDataCallbacks.playerDataError(ErrorCodes.CurrencyOperation);
+        return;
+    }
+
+    var updatedBalance = parseFloat(currency.getCurrentBalance()) + parseFloat(delta);
+
+    if (updatedBalance < 0) {
+        playerDataCallbacks.playerDataError(ErrorCodes.NotEnoughCurrency);
+    }
+
+    var updatedDelta = delta + currency.getDelta();
+
+    if (updatedDelta == 0) {
+        updatedDelta = delta;
+    }
+
+    currency.setDelta(updatedDelta);
+    currency.setCurrentBalance(updatedBalance);
+
+    if (userProf.getWallet().getLogic() == "CLIENT") {
+
+        var updatedData = new UpdatedData({"currencies": [currency]});
+
+        if (lastStoredReason == reason || lastStoredReason == "") {
+
+            playerDataCallbacks.playerDataUpdated(reason, updatedData);
+
+            if (timeoutObject == false) {
+                lastStoredReason = reason;
+
+                timeoutObject = setTimeout(timeoutSend, 5000);
+            }else {
+                //unregister current timeout object
+                clearTimeout(timeoutObject);
+
+                timeoutObject = setTimeout(timeoutSend, 5000);
+            }
+
+        }else {
+            var lastReason = lastStoredReason;
+
+            clearTimeout(timeoutObject);
+            timeoutObject = false;
+            sendEvent(lastReason);
+
+            sendEvent(reason);
+            lastStoredReason = reason;
+
+            playerDataCallbacks.playerDataUpdated(reason, updatedData);
+        }
+
+    }
+}
+
+
+
 var playerDataCallbacks = {
     playerDataError: function (error) {},
     playerDataAvailable: function () {},
     playerDataUpdated: function (reason, updatedData) {}
 };
+
 
 function updatePlayerData(data, callback) {
     EventUtil.sendEvent("updatePlayerData", data, function (responseData) {
@@ -274,7 +360,26 @@ function updatePlayerData(data, callback) {
             callback(userProfile);
         }
     });
-}
+};
+
+var playerDataUpdateReasons = {
+    RewardAds: "Reward Ads",
+    ItemBought: "Item Bought",
+    ItemSold: "Item Sold",
+    EventReward: "Event Reward",
+    LoginReward: "Login Reward",
+    IAP: "IAP",
+    PlayerLevelUp: "Player Level Up",
+    LevelComplete: "Level Complete",
+    ItemUpgrade: "Item Upgrade",
+    BonusFeatures: "Bonus Features",
+    Trade: "Trade",
+    ClientServerMismatch: "Client-Server Mismatch",
+    ItemPickedUp: "Item Picked Up",
+    ServerUpdate: "Server Update",
+    DailyBonus: "Daily Bonus From Client"
+};
+
 
 module.exports = {
     "SpilSDK": {
@@ -319,6 +424,24 @@ module.exports = {
             for (var listenerName in listeners) {
                 playerDataCallbacks[listenerName] = listeners[listenerName];
             }
+        },
+        addCurrencyToWallet: function (currencyId, delta, reason) {
+
+            if (parseInt(delta) < 0) {
+                playerDataCallbacks.playerDataError(ErrorCodes.CurrencyOperation);
+                return;
+            }
+
+            mutateWallet(currencyId, delta, reason)
+        },
+        subtractCurrencyFromWallet: function (currencyId, delta, reason) {
+
+            if (delta > 0) {
+                playerDataCallbacks.playerDataError(ErrorCodes.CurrencyOperation);
+                return;
+            }
+
+            mutateWallet(currencyId, -delta, reason)
         }
 
     }
