@@ -96,7 +96,7 @@ $(function(){
             '<input type="amount" class="inputfield" value="1">'+
             '<div class="btn btn-primary increment">+</div>' +
             '<div class="btn btn-primary savewallet" data-id="{{=it.currencyId}}" >save</div>' +
-            '<img class="status_image hidden" style="width:40px;" src="img/{{=it.statusImage}}">' +
+            '<div class="status_image hidden glyphicon glyphicon-ok" style="width:40px;"></div>' +
             '</div>'+
             '</div>'+
             '</div>');
@@ -130,8 +130,7 @@ $(function(){
                 name:currency.name,
                 currentBalance:currency.currentBalance,
                 id:i,
-                currencyId:currency.id,
-                statusImage:'loader.gif'
+                currencyId:currency.id
             }))
 
         }
@@ -148,7 +147,7 @@ $(function(){
                     var currency = currencies[i];
                     var panel = $('.currency_panel_'+currency.id);
                     var image = panel.find('.status_image')[0];
-                    image.src = 'img/check.png';
+                    
                     image.classList.remove('hidden');
 
                     panel.find('.badge').html(currency.currentBalance);
