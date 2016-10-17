@@ -1,5 +1,5 @@
-var PlayerCurrency;
-var PlayerItem;
+var PlayerCurrency,
+    PlayerItem;
 
 function UpdatedData(updatedData) {
     PlayerCurrency = require("./PlayerCurrency");

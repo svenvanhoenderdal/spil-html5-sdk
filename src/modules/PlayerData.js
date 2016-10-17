@@ -297,23 +297,23 @@ function mutateWallet(currencyId, delta, reason) {
 
     var updatedDelta = delta + currency.getDelta();
 
-    if (updatedDelta == 0) {
+    if (updatedDelta === 0) {
         updatedDelta = delta;
     }
 
     currency.setDelta(updatedDelta);
     currency.setCurrentBalance(updatedBalance);
 
-    if (userProf.getWallet().getLogic() == "CLIENT") {
+    if (userProf.getWallet().getLogic() === "CLIENT") {
 
         var updatedData = new UpdatedData({"currencies": [currency]});
 
 
-        if (lastStoredReason == reason || lastStoredReason == "") {
+        if (lastStoredReason === reason || lastStoredReason === "") {
 
             playerDataCallbacks.playerDataUpdated(reason, updatedData);
 
-            if (timeoutObject == false) {
+            if (timeoutObject === false) {
                 lastStoredReason = reason;
                 lastUpdatedData = updatedData;
 
@@ -352,7 +352,7 @@ function updatePlayerData(data, callback) {
             callback(userProfile);
         }
     });
-};
+}
 
 var playerDataUpdateReasons = {
     RewardAds: "Reward Ads",
