@@ -12,7 +12,7 @@ function getGameData() {
     try {
         gameData = new GameData(defaultGameData);
         return gameData;
-    } catch(err) {
+    } catch (err) {
         //GameDataError
         return null;
     }
@@ -22,7 +22,7 @@ function updateGameData(updatedGameData) {
     gameData = updatedGameData;
 }
 
-function processGameData (gameData) {
+function processGameData(gameData) {
     storedGameData = getGameData();
     storedGameData.setItems(gameData.items);
     storedGameData.setBundles(gameData.bundles);
@@ -32,19 +32,19 @@ function processGameData (gameData) {
 
     var wallet = PlayerData.getUserProfile().getWallet();
     for (var i = 0; i < storedGameData.getCurrencies().length; i++) {
-        var currency = storedGameData.getCurrencies()[i];
-        if (!wallet.getCurrency(currency.getId())) {
+        var storedCurrency = storedGameData.getCurrencies()[i];
+        if (!wallet.getCurrency(storedCurrency.getId())) {
             wallet.addCurrency(new PlayerCurrency({
-                'id': currency.getId(),
-                'currentBalance': currency.getInitialValue(),
-                'delta': currency.getInitialValue()
+                "id": storedCurrency.getId(),
+                "currentBalance": storedCurrency.getInitialValue(),
+                "delta": storedCurrency.getInitialValue()
             }));
         }
     }
     for (i = 0; i < wallet.getCurrencies().length; i++) {
-        var currency = wallet.getCurrencies()[i];
-        if (!storedGameData.getCurrency(currency.getId())) {
-            wallet.removeCurrency(currency.getId());
+        var playerCurrency = wallet.getCurrencies()[i];
+        if (!storedGameData.getCurrency(playerCurrency.getId())) {
+            wallet.removeCurrency(playerCurrency.getId());
         }
     }
 
@@ -57,7 +57,7 @@ module.exports = {
     "SpilSDK": {
         requestGameData: function (callback) {
             EventUtil.sendEvent("requestGameData", {}, function (responseData) {
-                processGameData(responseData.data)
+                processGameData(responseData.data);
 
                 Events.publish("onGameDataUpdated", gameData);
                 if (callback) {
@@ -80,4 +80,4 @@ var defaultGameData = {
     "promotions": [],
     "currencies": [],
     "shop": []
-}
+};
