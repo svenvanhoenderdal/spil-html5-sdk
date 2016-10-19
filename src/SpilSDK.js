@@ -38,7 +38,9 @@ SpilSDK = function (bundleId, appVersion, callback, environment) {
                         PlayerData.SpilSDK.requestPlayerData(callback);
                     });
                 }
-            }], function () {callback(SpilSDK);}
+            }], function () {
+            callback(SpilSDK);
+        }
         );
 
         /**
