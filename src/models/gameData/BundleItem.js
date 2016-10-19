@@ -2,7 +2,7 @@ var GameData;
 
 function BundleItem(bundleItemData) {
     GameData = require("../../modules/GameData").SpilSDK;
-    this.id = bundleItemData.id;
+    this.id = bundleItemData.itemId || bundleItemData.id;
     this.amount = bundleItemData.amount;
 }
 BundleItem.prototype.getId = function () {

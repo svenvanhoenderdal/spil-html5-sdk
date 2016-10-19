@@ -47,20 +47,29 @@
                     <ul id='package_list'></ul>
                 </div>
                 <div class="tab-pane fade" id="playerdata">
-                    <div>
-                        <button id="getcurrencies">SpilSDK.getWallet()</button>
-                        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="width:400px;"></div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button id="getcurrencies">SpilSDK.getWallet()</button>
+                            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="width:400px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="refreshInventoryButton">Refresh Inventory</button>
+                            <div class="panel-group" id="inventoryAccordion" role="tablist" aria-multiselectable="true" style="width:400px;"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="ingameshop">
                     <button id="ingameshop" onclick="refreshShop()">RefreshShop</button>
                     <li id="ingameshopTabTemplate" class="hidden"><a class="ingameshopTabButton" href="#ingameshopTabPlaceholder" data-toggle="tab">Placeholder</a></li>
                     <div id="ingameshopTabPlaceholder" class="tab-pane fade ">
-                        <ul class="ingameshopEntryList">
-                            <li id="ingameshopEntryTemplate" class="hidden">
-                                <span class="bundleHolder"></span><span class="labelHolder"></span> <span class="buttonHolder"></span>
-                            </li>
-                        </ul>
+                        <div class="ingameshopEntryList">
+                            <div id="ingameshopEntryTemplate" class="hidden row">
+                                <span class="bundleHolder col-md-4"></span>
+                                <span class="labelHolder col-md-4"></span>
+                                <!-- <div class="buttonHolder col-md-4"></div> -->
+                                <button class="buttonHolder">Buy</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="panel with-nav-tabs panel-default">
                         <div class="panel-heading">

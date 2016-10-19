@@ -2,7 +2,7 @@ var GameData;
 
 function BundlePrice(bundlePriceData) {
     GameData = require("../../modules/GameData").SpilSDK;
-    this.currencyId = bundlePriceData.currencyId;
+    this.currencyId = bundlePriceData.currencyId || bundlePriceData.id;
     this.value = bundlePriceData.value;
 }
 BundlePrice.prototype.getCurrencyId = function () {

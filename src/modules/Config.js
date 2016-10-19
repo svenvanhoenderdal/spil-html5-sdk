@@ -3,12 +3,16 @@ var Events = require("../core_modules/Events");
 
 var config = {};
 
+var configDataCallbacks = {
+    'configDataUpdated': function() {}
+}
+
 module.exports = {
     "SpilSDK": {
         refreshConfig: function (callback) {
             EventUtil.sendEvent("requestConfig", {}, function (responseData) {
                 config = responseData.data;
-                Events.publish("onConfigUpdated", config);
+                configDataCallbacks.configDataUpdated();
                 if (callback) {
                     callback(data);
                 }
@@ -20,8 +24,10 @@ module.exports = {
         getConfigValue: function (key) {
             return config[key];
         },
-        onConfigUpdated: function (callback) {
-            Events.subscribe("onConfigUpdated", callback);
+        setConfigDataCallbacks: function(listeners) {
+            for (var listenerName in listeners) {
+                configDataCallbacks[listenerName] = listeners[listenerName];
+            }
         }
     }
 };

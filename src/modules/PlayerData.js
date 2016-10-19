@@ -23,39 +23,29 @@ function getUserProfile() {
     return userProfile;
 }
 
-function updateUserProfile(updatedUserProfile) {
-    userProfile = updatedUserProfile;
-}
-
 function processPlayerData(wallet, inventory) {
     var updated = false,
         updatedData = new UpdatedData(),
         userProfile = getUserProfile();
     wallet = new Wallet(wallet);
     inventory = new Inventory(inventory);
-    if (userProfile == null) {
-        console.log("processPlayerData: no userprofile set!");
+    if (!userProfile) {
         return;
     }
-    if (wallet == null || inventory == null) {
-        console.log("processPlayerData: no wallet or inventory!");
-        return;
-        //PlayerDataError
+    if (wallet) {
+        updated = processWallet(userProfile.getWallet(), wallet) && updated;
+        updatedData.setCurrencies(wallet.getCurrencies());
     }
-    updated = processWallet(userProfile.getWallet(), wallet) && updated;
-    updatedData.setCurrencies(wallet.getCurrencies());
-
-    updated = processInventory(userProfile.getInventory(), inventory) && updated;
-    updatedData.setItems(inventory.getItems());
-
-    updateUserProfile(userProfile);
+    if (inventory) {
+        updated = processInventory(userProfile.getInventory(), inventory) && updated;
+        updatedData.setItems(inventory.getItems());
+    }
 
     if (updated) {
-        console.log("PlayerDataUpdated");
-        //PlayerDataUpdated
+        playerDataCallbacks.playerDataUpdated(playerDataUpdateReasons.ServerUpdate, updatedData);
     }
 
-    //PlayerDataAvailable
+    playerDataCallbacks.playerDataAvailable();
 }
 
 function processWallet(oldWallet, newWallet) {
@@ -66,7 +56,6 @@ function processWallet(oldWallet, newWallet) {
     for (var i = 0; i < storedCurrencies.length; i++) {
         storedCurrencies[i].setDelta(0);
     }
-    // !!! Something with init wallet
     if (oldWallet.getOffset() < newWallet.getOffset() &&
             receivedCurrencies.length > 0 &&
             newWallet.getLogic() === "CLIENT") {
@@ -95,6 +84,7 @@ function processInventory(oldInventory, newInventory) {
     var storedItems = oldInventory.getItems(),
         receivedItems = newInventory.getItems(),
         updated = false;
+
     for (i = 0; i < storedItems.length; i++) {
         storedItems[i].setDelta(0);
     }
@@ -133,13 +123,13 @@ function updateInventoryWithItem(itemId, amount, action, reason) {
     var userProfile = getUserProfile(),
         gameData = require("./GameData").SpilSDK.getGameData();
     if (!userprofile || !gameData) {
-        //PlayerDataError - LoadFailed
+        playerDataCallbacks.playerDataError(ErrorCodes.LoadFailed);
         return;
     }
 
     var item = gameData.getItem(itemId);
     if (item === null || amount === undefined || action === undefined || reason === undefined) {
-        // playerDataError - ItemOperation
+        playerDataCallbacks.playerDataError(ErrorCodes.ItemOperation);
         return;
     }
     var playerItem = new PlayerItem({
@@ -157,14 +147,13 @@ function updateInventoryWithItem(itemId, amount, action, reason) {
         if (action === "add") {
             userProfile.getInventory().addItem(playerItem);
         } else if (action === "substract") {
-            console.log("playerDataError - ItemAmountToLow");
+            playerDataCallbacks.playerDataError(ErrorCodes.ItemAmountToLow);
         }
     }
-    updateUserProfile(userprofile);
     var updatedData = new UpdatedData();
     updatedData.addItem(playerItem);
 
-    // playerDataUpdated
+    playerDataCallbacks.playerDataUpdated(reason, updatedData);
 
     sendUpdatePlayerDataEvent(updatedData, reason, "item", item.getObject());
 }
@@ -173,13 +162,13 @@ function updateInventoryWithBundle(bundleId, reason) {
     var userProfile = getUserProfile(),
         gameData = require("./GameData").SpilSDK.getGameData();
     if (!userProfile || !gameData) {
-        console.log("playerDataError - LoadFailed");
+        playerDataCallbacks.playerDataError(ErrorCodes.LoadFailed);
         return;
     }
     var updatedData = new UpdatedData(),
         bundle = gameData.getBundle(bundleId);
     if (bundle === null || reason === undefined) {
-        console.log("playerDataError - BundleOperation");
+        playerDataCallbacks.playerDataError(ErrorCodes.BundleOperation);
         return;
     }
     //Look at tempCurrency
@@ -187,14 +176,13 @@ function updateInventoryWithBundle(bundleId, reason) {
         var bundlePrice = bundle.getPrices()[i],
             playerCurrency = userProfile.getWallet().getCurrency(bundlePrice.getCurrencyId());
         if (!playerCurrency) {
-            console.log("playerDataError - CurrencyNotFound");
+            playerDataCallbacks.playerDataError(ErrorCodes.CurrencyNotFound);
             return;
         }
         var currentBalance = playerCurrency.getCurrentBalance(),
             updatedBalance = currentBalance - bundlePrice.getValue();
         if (updatedBalance < 0) {
-            console.log("playerDataError - NotEnoughCurrency");
-            //playerDataError -
+            playerDataCallbacks.playerDataError(ErrorCodes.NotEnoughCurrency);
             return;
         }
         var updatedDelta = playerCurrency.getDelta() - bundlePrice.getValue();
@@ -220,16 +208,18 @@ function updateInventoryWithBundle(bundleId, reason) {
 
             inventoryItem.setDelta(bundleItem.getAmount());
             inventoryItem.setAmount(inventoryItemAmount);
+            updatedData.addItem(inventoryItem);
         } else {
             playerItem.setDelta(bundleItem.getAmount());
             playerItem.setAmount(bundleItem.getAmount());
             userProfile.getInventory().addItem(playerItem);
+            updatedData.addItem(playerItem);
         }
-        updatedData.addItem(playerItem);
     }
 
     sendUpdatePlayerDataEvent(updatedData, reason, "bundle", bundle.getObject());
-    //playerDataUpdated
+
+    playerDataCallbacks.playerDataUpdated(reason, updatedData);
 }
 
 function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingValue) {
@@ -242,7 +232,6 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
                 offset: userProfile.getInventory().getOffset()
             }
         };
-
     if (updatedData.getCurrencies().length > 0) {
         result.wallet.currencies = [];
         for (var i = 0; i < updatedData.getCurrencies().length; i++) {
@@ -260,12 +249,16 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
             var item = updatedData.getItems()[j];
             result.inventory.items.push({
                 id: item.getId(),
-                amount: item.getAmount()
+                amount: item.getAmount(),
+                delta: item.getDelta()
             });
         }
     }
     if (reportingKey && reportingValue) {
         result[reportingKey] = reportingValue;
+    }
+    if (reason) {
+        result['reason'] = reason;
     }
     updatePlayerData(result);
 }
@@ -388,7 +381,9 @@ module.exports = {
                 }
             });
         },
-        updatePlayerData: updatePlayerData,
+        updatePlayerData: function() {
+            sendUpdatePlayerDataEvent(new UpdatedData());
+        },
         getWallet: function () {
             var userProf = getUserProfile();
             if (userProf) {
@@ -412,11 +407,6 @@ module.exports = {
         consumeBundle: function (bundleId, reason) {
             updateInventoryWithBundle(bundleId, reason);
         },
-        setPlayerDataCallbacks: function (listeners) {
-            for (var listenerName in listeners) {
-                playerDataCallbacks[listenerName] = listeners[listenerName];
-            }
-        },
         addCurrencyToWallet: function (currencyId, delta, reason) {
 
             if (parseInt(delta) < 0) {
@@ -434,8 +424,12 @@ module.exports = {
             }
 
             mutateWallet(currencyId, parseFloat(-delta), reason);
+        },
+        setPlayerDataCallbacks: function (listeners) {
+            for (var listenerName in listeners) {
+                playerDataCallbacks[listenerName] = listeners[listenerName];
+            }
         }
-
     }
 };
 

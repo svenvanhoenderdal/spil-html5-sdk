@@ -21,7 +21,8 @@ $(function(){
                 $('#package_list').append('<li><button onclick="SpilSDK.openPaymentsScreen(' + package.packageId + ')">' + package.packageId + '</button></li>');
             }
     }
-    var reloadGameConfig = function(gameConfig) {
+    var reloadGameConfig = function() {
+        var gameConfig = SpilSDK.getConfigAll()
        $('#game_config_area').text(JSON.stringify(gameConfig));
     }
     //
@@ -63,6 +64,7 @@ $(function(){
                 var entryTemplate = $("#ingameshopEntryTemplate").clone();
                 entryTemplate.find('.bundleHolder').html(entry.getBundle().getName());
                 entryTemplate.find('.labelHolder').html(entry.getLabel());
+                entryTemplate.find('.buttonHolder').attr('onclick', "SpilSDK.consumeBundle(" + entry.getBundleId() + ", \"Item Bought\")")
                 entryTemplate.removeClass('hidden');
                 entryTemplate.appendTo(entriesTemplate.find('.ingameshopEntryList'))
             }
@@ -134,6 +136,79 @@ $(function(){
             }))
 
         }
+    });
+
+    $('#refreshInventoryButton').click(function(){
+
+        var items = SpilSDK.getInventory().getItems();
+
+
+
+        var tempFn = doT.template(''+
+            '<div class="panel panel-default inventoryPanel{{=it.itemId}}">'+
+                '<div class="panel-heading" role="tab" id="panel_{{=it.id}}">'+
+                    '<div class="panel-title" style="font-size:12px">'+
+                        '<a role="button" data-toggle="collapse" href="#inventoryBody{{=it.id}}">{{=it.name}} (id:{{=it.itemId}})</a>'+
+                        '<span class="badge pull-right" >{{=it.amount}}</span>'+
+                    '</div>'+
+                '</div>'+
+                '<div id="inventoryBody{{=it.id}}" class="panel-collapse collapse">'+
+                    '<div class="panel-body">' +
+                        '<div class="btn btn-primary decrement">-</div>' +
+                        '<input type="amount" class="inputfield" value="1">'+
+                        '<div class="btn btn-primary increment">+</div>' +
+                        '<div class="btn btn-primary saveInventory" data-id="{{=it.itemId}}" >save</div>' +
+                        '<div class="statusImage hidden glyphicon glyphicon-ok" style="width:40px;"></div>' +
+                    '</div>'+
+                '</div>'+
+            '</div>');
+
+        $('#inventoryAccordion').on('click','.decrement',function(){
+
+            var valueField = $(this).parent().find('.inputfield');
+
+            $(valueField).val(parseInt(valueField.val())-1);
+        });
+
+        $('#inventoryAccordion').on('click','.increment',function(){
+
+            var valueField = $(this).parent().find('.inputfield');
+
+            $(valueField).val(parseInt(valueField.val())+1);
+        });
+
+        $('#inventoryAccordion').on('click','.saveInventory',function(){
+            var valueField = $(this).parent().find('.inputfield');
+            //currencyId, delta, reason
+            // SpilSDK.addCurrencyToWallet(parseInt($(this).data('id')),valueField.val(),'ItemBought');
+        });
+
+        $('#inventoryAccordion').html('');
+
+        for(var i=0;i<items.length;i++){
+            var item = items[i];
+
+            $('#inventoryAccordion').append(tempFn({
+                name:item.getName(),
+                amount:item.getAmount(),
+                id:i,
+                itemId:item.id
+            }))
+
+        }
+
+
+    });
+
+
+    SpilSDK('com.spilgames.slot', '0.0.2', function(){
+        console.log('sdk ready');
+        SpilSDK.onPackagesUpdated(loadPackages);
+        SpilSDK.setConfigDataCallbacks({
+            configDataUpdated: reloadGameConfig
+        });
+
+        initgame();
 
         SpilSDK.setPlayerDataCallbacks({
             playerDataError:function(error){
@@ -147,26 +222,23 @@ $(function(){
                     var currency = currencies[i];
                     var panel = $('.currency_panel_'+currency.id);
                     var image = panel.find('.status_image')[0];
-                    
+
                     image.classList.remove('hidden');
 
                     panel.find('.badge').html(currency.currentBalance);
                 }
+                var items = updatedData.items;
+
+                for(var i=0;i<items.length;i++){
+                    var item = items[i];
+                    var panel = $('.inventoryPanel' + item.id);
+                    var image = panel.find('.statusImage')[0];
+
+                    image.classList.remove('hidden');
+
+                    panel.find('.badge').html(item.amount);
+                }
             }
         });
-
-    });
-
-    SpilSDK('com.spilgames.slot', '0.0.2', function(){
-        console.log('sdk ready');
-        SpilSDK.onPackagesUpdated(loadPackages);
-        SpilSDK.onConfigUpdated(reloadGameConfig);
-
-        initgame();
-
-
-
-        //SpilSDK.getWallet();
-
     }, 'stg');
 });

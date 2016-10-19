@@ -3,6 +3,7 @@ var Events = require("../core_modules/Events");
 var GameData = require("../models/gameData/GameData");
 var PlayerData = require("./PlayerData").SpilSDK;
 var PlayerCurrency = require("../models/playerData/PlayerCurrency");
+var ErrorCodes = require("../core_modules/ErrorCodes");
 var gameData;
 
 function getGameData() {
@@ -13,7 +14,7 @@ function getGameData() {
         gameData = new GameData(defaultGameData);
         return gameData;
     } catch (err) {
-        //GameDataError
+        gameDataCallbacks.gameDataError(ErrorCodes.loadFailed);
         return null;
     }
 }
@@ -50,8 +51,13 @@ function processGameData(gameData) {
 
     updateGameData(storedGameData);
 
-    //gameDataAvailable
+    gameDataCallbacks.gameDataAvailable();
 }
+
+var gameDataCallbacks = {
+    gameDataError: function (error) {},
+    gameDataAvailable: function () {}
+};
 
 module.exports = {
     "SpilSDK": {
@@ -68,8 +74,10 @@ module.exports = {
         getGameData: function () {
             return getGameData();
         },
-        onGameDataUpdated: function (callback) {
-            Events.subscribe("onGameDataUpdated", callback);
+        setGameDataCallbacks: function (listeners) {
+            for (var listenerName in listeners) {
+                gameDataCallbacks[listenerName] = listeners[listenerName];
+            }
         }
     }
 };
