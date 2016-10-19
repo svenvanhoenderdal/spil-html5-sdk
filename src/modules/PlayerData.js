@@ -4,8 +4,9 @@ var ErrorCodes = require("../core_modules/ErrorCodes"),
     UpdatedData = require("../models/playerData/UpdatedData"),
     Wallet = require("../models/playerData/Wallet"),
     Inventory = require("../models/playerData/Inventory"),
-    PlayerItem = require("../models/playerData/PlayerItem"),
-    userProfile,
+    PlayerItem = require("../models/playerData/PlayerItem");
+
+var userProfile,
     lastStoredReason = "",
     timeoutObject = false,
     lastUpdatedData,
@@ -96,10 +97,11 @@ function processInventory(oldInventory, newInventory) {
         for (i = 0; i < receivedItems.length; i++) {
             var receivedItem = receivedItems[i],
                 storedItem = oldInventory.getItem(receivedItem.getId());
-
             if (storedItem == null) {
-                oldInventory.addItem(receivedItem);
-                updated = true;
+                if (receivedItem.getAmount() > 0) {
+                    oldInventory.addItem(receivedItem);
+                    updated = true;
+                }
                 continue;
             }
 
@@ -122,7 +124,8 @@ function processInventory(oldInventory, newInventory) {
 function updateInventoryWithItem(itemId, amount, action, reason) {
     var userProfile = getUserProfile(),
         gameData = require("./GameData").SpilSDK.getGameData();
-    if (!userprofile || !gameData) {
+    amount = parseInt(amount);
+    if (!userProfile || !gameData) {
         playerDataCallbacks.playerDataError(ErrorCodes.LoadFailed);
         return;
     }
@@ -133,32 +136,39 @@ function updateInventoryWithItem(itemId, amount, action, reason) {
         return;
     }
     var playerItem = new PlayerItem({
-        id: item.getId(),
-        delta: amount,
-        amount: amount
-    }),
-        inventoryItem = userProfile.getInventory ().getItem(itemId);
+            id: item.getId(),
+            delta: amount,
+            amount: amount
+        }),
+        inventoryItem = userProfile.getInventory ().getItem(itemId),
+        updatedData = new UpdatedData();
     if (inventoryItem) {
         var inventoryItemAmount = inventoryItem.getAmount();
         inventoryItemAmount += (action === "add" ? amount : -amount);
+        if (inventoryItemAmount < 0) {
+
+            playerDataCallbacks.playerDataError(ErrorCodes.ItemAmountToLow);
+            return;
+        }
         inventoryItem.setDelta(amount);
-        inventoryItem.setAmount(inventoryItem);
+        inventoryItem.setAmount(inventoryItemAmount);
+        updatedData.addItem(inventoryItem);
     } else {
         if (action === "add") {
             userProfile.getInventory().addItem(playerItem);
+            updatedData.addItem(playerItem);
         } else if (action === "substract") {
             playerDataCallbacks.playerDataError(ErrorCodes.ItemAmountToLow);
+            return;
         }
     }
-    var updatedData = new UpdatedData();
-    updatedData.addItem(playerItem);
 
     playerDataCallbacks.playerDataUpdated(reason, updatedData);
 
     sendUpdatePlayerDataEvent(updatedData, reason, "item", item.getObject());
 }
 
-function updateInventoryWithBundle(bundleId, reason) {
+function updateInventoryWithBundle(bundleId, reason, fromShop) {
     var userProfile = getUserProfile(),
         gameData = require("./GameData").SpilSDK.getGameData();
     if (!userProfile || !gameData) {
@@ -171,9 +181,16 @@ function updateInventoryWithBundle(bundleId, reason) {
         playerDataCallbacks.playerDataError(ErrorCodes.BundleOperation);
         return;
     }
+
+    var prices = bundle.getPrices(),
+        promotion = gameData.getPromotion(bundle.getId()),
+        usePromotion = promotion && fromShop;
+    if (usePromotion) {
+        prices = promotion.getPrices();
+    }
     //Look at tempCurrency
-    for (var i =  0; i < bundle.getPrices().length; i++) {
-        var bundlePrice = bundle.getPrices()[i],
+    for (var i =  0; i < prices.length; i++) {
+        var bundlePrice = prices[i],
             playerCurrency = userProfile.getWallet().getCurrency(bundlePrice.getCurrencyId());
         if (!playerCurrency) {
             playerDataCallbacks.playerDataError(ErrorCodes.CurrencyNotFound);
@@ -198,20 +215,24 @@ function updateInventoryWithBundle(bundleId, reason) {
 
     for (i = 0; i < bundle.getItems().length; i++) {
         var bundleItem = bundle.getItems()[i],
-            playerItem = new PlayerItem({
-            id: bundleItem.getId()
-        }),
-            inventoryItem = userProfile.getInventory().getItem(bundleItem.getId());
+                playerItem = new PlayerItem({
+                id: bundleItem.getId()
+            }),
+            inventoryItem = userProfile.getInventory().getItem(bundleItem.getId()),
+            bundleItemAmount = bundleItem.getAmount();
+        if (usePromotion) {
+            bundleItemAmount *= promotion.getAmount();
+        }
         if (inventoryItem != null) {
             var inventoryItemAmount = inventoryItem.getAmount();
-            inventoryItemAmount = inventoryItemAmount + bundleItem.getAmount();
+            inventoryItemAmount = inventoryItemAmount + bundleItemAmount;
 
-            inventoryItem.setDelta(bundleItem.getAmount());
+            inventoryItem.setDelta(bundleItemAmount);
             inventoryItem.setAmount(inventoryItemAmount);
             updatedData.addItem(inventoryItem);
         } else {
-            playerItem.setDelta(bundleItem.getAmount());
-            playerItem.setAmount(bundleItem.getAmount());
+            playerItem.setDelta(bundleItemAmount);
+            playerItem.setAmount(bundleItemAmount);
             userProfile.getInventory().addItem(playerItem);
             updatedData.addItem(playerItem);
         }
@@ -258,7 +279,7 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
         result[reportingKey] = reportingValue;
     }
     if (reason) {
-        result['reason'] = reason;
+        result.reason = reason;
     }
     updatePlayerData(result);
 }
@@ -286,6 +307,7 @@ function mutateWallet(currencyId, delta, reason) {
 
     if (updatedBalance < 0) {
         playerDataCallbacks.playerDataError(ErrorCodes.NotEnoughCurrency);
+        return;
     }
 
     var updatedDelta = delta + currency.getDelta();
@@ -381,14 +403,14 @@ module.exports = {
                 }
             });
         },
-        updatePlayerData: function() {
+        updatePlayerData: function () {
             sendUpdatePlayerDataEvent(new UpdatedData());
         },
         getWallet: function () {
             var userProf = getUserProfile();
             if (userProf) {
                 return userProf.getWallet();
-            }else {
+            } else {
                 playerDataCallbacks.playerDataError(ErrorCodes.WalletNotFound);
             }
         },
@@ -399,13 +421,23 @@ module.exports = {
             return getUserProfile();
         },
         addItemToInventory: function (itemId, amount, reason) {
+
+            if (parseInt(amount) < 0) {
+                playerDataCallbacks.playerDataError(ErrorCodes.ItemOperation);
+                return;
+            }
             updateInventoryWithItem(itemId, amount, "add", reason);
         },
         subtractItemFromInventory: function (itemId, amount, reason) {
+
+            if (parseInt(amount) < 0) {
+                playerDataCallbacks.playerDataError(ErrorCodes.ItemOperation);
+                return;
+            }
             updateInventoryWithItem(itemId, amount, "substract", reason);
         },
-        consumeBundle: function (bundleId, reason) {
-            updateInventoryWithBundle(bundleId, reason);
+        consumeBundle: function (bundleId, reason, fromShop) {
+            updateInventoryWithBundle(bundleId, reason, fromShop);
         },
         addCurrencyToWallet: function (currencyId, delta, reason) {
 
@@ -418,7 +450,7 @@ module.exports = {
         },
         subtractCurrencyFromWallet: function (currencyId, delta, reason) {
 
-            if (delta > 0) {
+            if (parseInt(delta) < 0) {
                 playerDataCallbacks.playerDataError(ErrorCodes.CurrencyOperation);
                 return;
             }

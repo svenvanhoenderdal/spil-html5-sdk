@@ -18,5 +18,8 @@ Entry.prototype.getPosition = function () {
 Entry.prototype.getBundle = function () {
     return GameData.getGameData().getBundle(this.bundleId);
 };
+Entry.prototype.getPromotion = function () {
+    return GameData.getGameData().getPromotion(this.bundleId);
+};
 
 module.exports = Entry;

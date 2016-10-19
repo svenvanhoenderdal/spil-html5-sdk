@@ -1,10 +1,10 @@
-var Item, Bundle, Currency, Promotion, Tab;
+var Item, Bundle, Currency, Promotion, Shop;
 function GameData(gameData) {
     Item = require("./Item");
     Bundle = require("./Bundle");
     Currency = require("./Currency");
     Promotion = require("./Promotion");
-    Tab = require("./Tab");
+    Shop = require("./Shop");
 
     this.setItems(gameData.items);
     this.setBundles(gameData.bundles);
@@ -37,7 +37,10 @@ GameData.prototype.getBundles = function () {
 GameData.prototype.setBundles = function (bundles) {
     this.bundles = [];
     this.bundlesDict = {};
-    for (i = 0; i < bundles.length; i++) {
+    if (!bundles || !bundles.length) {
+        return;
+    }
+    for (var i = 0; i < bundles.length; i++) {
         var bundle = new Bundle(bundles[i]);
         this.bundles.push(bundle);
         this.bundlesDict[bundle.getId()] = bundle;
@@ -52,7 +55,10 @@ GameData.prototype.getCurrencies = function () {
 GameData.prototype.setCurrencies = function (currencies) {
     this.currencies = [];
     this.currenciesDict = {};
-    for (i = 0; i < currencies.length; i++) {
+    if (!currencies || !currencies.length) {
+        return;
+    }
+    for (var i = 0; i < currencies.length; i++) {
         var currency = new Currency(currencies[i]);
         this.currencies.push(currency);
         this.currenciesDict[currency.getId()] = currency;
@@ -67,27 +73,23 @@ GameData.prototype.getPromotions = function () {
 GameData.prototype.setPromotions = function (promotions) {
     this.promotions = [];
     this.promotionsDict = {};
-    for (i = 0; i < promotions.length; i++) {
+    if (!promotions || !promotions.length) {
+        return;
+    }
+    for (var i = 0; i < promotions.length; i++) {
         var promotion = new Promotion(promotions[i]);
         this.promotions.push(promotion);
         this.promotionsDict[promotion.getBundleId()] = promotion;
     }
 };
-GameData.prototype.getPromotion = function (promotionId) {
-    return this.promotionsDict[promotionId] || null;
+GameData.prototype.getPromotion = function (bundleId) {
+    return this.promotionsDict[bundleId] || null;
 };
 GameData.prototype.getShop = function () {
     return this.shop;
 };
 GameData.prototype.setShop = function (shop) {
-    this.shop = [];
-    for (i = 0; i < shop.length; i++) {
-        var tab = new Tab(shop[i]);
-        this.shop.push(tab);
-    }
-};
-GameData.prototype.updateGameData = function (gameData) {
-    return this.shop;
+    this.shop = new Shop(shop);
 };
 
 module.exports = GameData;

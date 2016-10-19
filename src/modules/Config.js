@@ -1,11 +1,10 @@
 var EventUtil = require("./EventUtil");
 var Events = require("../core_modules/Events");
 
-var config = {};
-
-var configDataCallbacks = {
-    'configDataUpdated': function() {}
-}
+var config = {},
+    configDataCallbacks = {
+        "configDataUpdated": function () {}
+    };
 
 module.exports = {
     "SpilSDK": {
@@ -24,7 +23,7 @@ module.exports = {
         getConfigValue: function (key) {
             return config[key];
         },
-        setConfigDataCallbacks: function(listeners) {
+        setConfigDataCallbacks: function (listeners) {
             for (var listenerName in listeners) {
                 configDataCallbacks[listenerName] = listeners[listenerName];
             }
