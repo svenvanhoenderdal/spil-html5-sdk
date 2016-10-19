@@ -64,8 +64,6 @@ module.exports = {
         requestGameData: function (callback) {
             EventUtil.sendEvent("requestGameData", {}, function (responseData) {
                 processGameData(responseData.data);
-
-                Events.publish("onGameDataUpdated", gameData);
                 if (callback) {
                     callback(gameData);
                 }

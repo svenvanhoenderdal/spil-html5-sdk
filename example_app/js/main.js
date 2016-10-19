@@ -10,14 +10,15 @@ $(function(){
         $('html,body').scrollTop(scrollmem);
     });
 
-    var initgame = function(){
-    }
-    var loadPackages = function(packages)  {
-       $('#package_list').empty();
-            for (var key in packages) {
-                package = packages[key];
-                $('#package_list').append('<li><button onclick="SpilSDK.openPaymentsScreen(' + package.packageId + ')">' + package.packageId + '</button></li>');
-            }
+    var initgame = function(){}
+
+    var loadPackages = function()  {
+        var packages = SpilSDK.getAllPackages();
+        $('#package_list').empty();
+        for (var key in packages) {
+            package = packages[key];
+            $('#package_list').append('<li><button onclick="SpilSDK.openPaymentsScreen(' + package.packageId + ')">' + package.packageId + '</button></li>');
+        }
     }
     var reloadGameConfig = function() {
         var gameConfig = SpilSDK.getConfigAll()
@@ -236,8 +237,12 @@ $(function(){
         SpilSDK.refreshConfig();
     });
 
-    $('#request_packages').click(function(){
-        SpilSDK.requestPackages()
+    $('#requestPackages').click(function(){
+        SpilSDK.requestPackages();
+    });
+
+    $('#loadPackages').click(function(){
+        loadPackages();
     });
 
     $('#ingameshopButton').click(function(){
@@ -249,8 +254,6 @@ $(function(){
         console.log('sdk ready');
         initgame();
     }, 'stg');
-
-    SpilSDK.onPackagesUpdated(loadPackages);
 
     SpilSDK.setConfigDataCallbacks({
         configDataUpdated: reloadGameConfig

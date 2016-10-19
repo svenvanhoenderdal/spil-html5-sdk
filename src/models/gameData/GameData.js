@@ -40,7 +40,7 @@ GameData.prototype.setBundles = function (bundles) {
     if (!bundles || !bundles.length) {
         return;
     }
-    for (i = 0; i < bundles.length; i++) {
+    for (var i = 0; i < bundles.length; i++) {
         var bundle = new Bundle(bundles[i]);
         this.bundles.push(bundle);
         this.bundlesDict[bundle.getId()] = bundle;
@@ -58,7 +58,7 @@ GameData.prototype.setCurrencies = function (currencies) {
     if (!currencies || !currencies.length) {
         return;
     }
-    for (i = 0; i < currencies.length; i++) {
+    for (var i = 0; i < currencies.length; i++) {
         var currency = new Currency(currencies[i]);
         this.currencies.push(currency);
         this.currenciesDict[currency.getId()] = currency;
@@ -76,7 +76,7 @@ GameData.prototype.setPromotions = function (promotions) {
     if (!promotions || !promotions.length) {
         return;
     }
-    for (i = 0; i < promotions.length; i++) {
+    for (var i = 0; i < promotions.length; i++) {
         var promotion = new Promotion(promotions[i]);
         this.promotions.push(promotion);
         this.promotionsDict[promotion.getBundleId()] = promotion;
