@@ -4,8 +4,9 @@ var ErrorCodes = require("../core_modules/ErrorCodes"),
     UpdatedData = require("../models/playerData/UpdatedData"),
     Wallet = require("../models/playerData/Wallet"),
     Inventory = require("../models/playerData/Inventory"),
-    PlayerItem = require("../models/playerData/PlayerItem"),
-    userProfile,
+    PlayerItem = require("../models/playerData/PlayerItem");
+
+var userProfile,
     lastStoredReason = "",
     timeoutObject = false,
     lastUpdatedData,
@@ -23,39 +24,29 @@ function getUserProfile() {
     return userProfile;
 }
 
-function updateUserProfile(updatedUserProfile) {
-    userProfile = updatedUserProfile;
-}
-
 function processPlayerData(wallet, inventory) {
     var updated = false,
         updatedData = new UpdatedData(),
         userProfile = getUserProfile();
     wallet = new Wallet(wallet);
     inventory = new Inventory(inventory);
-    if (userProfile == null) {
-        console.log("processPlayerData: no userprofile set!");
+    if (!userProfile) {
         return;
     }
-    if (wallet == null || inventory == null) {
-        console.log("processPlayerData: no wallet or inventory!");
-        return;
-        //PlayerDataError
+    if (wallet) {
+        updated = processWallet(userProfile.getWallet(), wallet) && updated;
+        updatedData.setCurrencies(wallet.getCurrencies());
     }
-    updated = processWallet(userProfile.getWallet(), wallet) && updated;
-    updatedData.setCurrencies(wallet.getCurrencies());
-
-    updated = processInventory(userProfile.getInventory(), inventory) && updated;
-    updatedData.setItems(inventory.getItems());
-
-    updateUserProfile(userProfile);
+    if (inventory) {
+        updated = processInventory(userProfile.getInventory(), inventory) && updated;
+        updatedData.setItems(inventory.getItems());
+    }
 
     if (updated) {
-        console.log("PlayerDataUpdated");
-        //PlayerDataUpdated
+        playerDataCallbacks.playerDataUpdated(playerDataUpdateReasons.ServerUpdate, updatedData);
     }
 
-    //PlayerDataAvailable
+    playerDataCallbacks.playerDataAvailable();
 }
 
 function processWallet(oldWallet, newWallet) {
@@ -66,7 +57,6 @@ function processWallet(oldWallet, newWallet) {
     for (var i = 0; i < storedCurrencies.length; i++) {
         storedCurrencies[i].setDelta(0);
     }
-    // !!! Something with init wallet
     if (oldWallet.getOffset() < newWallet.getOffset() &&
             receivedCurrencies.length > 0 &&
             newWallet.getLogic() === "CLIENT") {
@@ -95,6 +85,7 @@ function processInventory(oldInventory, newInventory) {
     var storedItems = oldInventory.getItems(),
         receivedItems = newInventory.getItems(),
         updated = false;
+
     for (i = 0; i < storedItems.length; i++) {
         storedItems[i].setDelta(0);
     }
@@ -106,10 +97,11 @@ function processInventory(oldInventory, newInventory) {
         for (i = 0; i < receivedItems.length; i++) {
             var receivedItem = receivedItems[i],
                 storedItem = oldInventory.getItem(receivedItem.getId());
-
             if (storedItem == null) {
-                oldInventory.addItem(receivedItem);
-                updated = true;
+                if (receivedItem.getAmount() > 0) {
+                    oldInventory.addItem(receivedItem);
+                    updated = true;
+                }
                 continue;
             }
 
@@ -132,69 +124,82 @@ function processInventory(oldInventory, newInventory) {
 function updateInventoryWithItem(itemId, amount, action, reason) {
     var userProfile = getUserProfile(),
         gameData = require("./GameData").SpilSDK.getGameData();
-    if (!userprofile || !gameData) {
-        //PlayerDataError - LoadFailed
+    amount = parseInt(amount);
+    if (!userProfile || !gameData) {
+        playerDataCallbacks.playerDataError(ErrorCodes.LoadFailed);
         return;
     }
 
     var item = gameData.getItem(itemId);
     if (item === null || amount === undefined || action === undefined || reason === undefined) {
-        // playerDataError - ItemOperation
+        playerDataCallbacks.playerDataError(ErrorCodes.ItemOperation);
         return;
     }
     var playerItem = new PlayerItem({
-        id: item.getId(),
-        delta: amount,
-        amount: amount
-    }),
-        inventoryItem = userProfile.getInventory ().getItem(itemId);
+            id: item.getId(),
+            delta: amount,
+            amount: amount
+        }),
+        inventoryItem = userProfile.getInventory ().getItem(itemId),
+        updatedData = new UpdatedData();
     if (inventoryItem) {
         var inventoryItemAmount = inventoryItem.getAmount();
         inventoryItemAmount += (action === "add" ? amount : -amount);
+        if (inventoryItemAmount < 0) {
+
+            playerDataCallbacks.playerDataError(ErrorCodes.ItemAmountToLow);
+            return;
+        }
         inventoryItem.setDelta(amount);
-        inventoryItem.setAmount(inventoryItem);
+        inventoryItem.setAmount(inventoryItemAmount);
+        updatedData.addItem(inventoryItem);
     } else {
         if (action === "add") {
             userProfile.getInventory().addItem(playerItem);
+            updatedData.addItem(playerItem);
         } else if (action === "substract") {
-            console.log("playerDataError - ItemAmountToLow");
+            playerDataCallbacks.playerDataError(ErrorCodes.ItemAmountToLow);
+            return;
         }
     }
-    updateUserProfile(userprofile);
-    var updatedData = new UpdatedData();
-    updatedData.addItem(playerItem);
 
-    // playerDataUpdated
+    playerDataCallbacks.playerDataUpdated(reason, updatedData);
 
     sendUpdatePlayerDataEvent(updatedData, reason, "item", item.getObject());
 }
 
-function updateInventoryWithBundle(bundleId, reason) {
+function updateInventoryWithBundle(bundleId, reason, fromShop) {
     var userProfile = getUserProfile(),
         gameData = require("./GameData").SpilSDK.getGameData();
     if (!userProfile || !gameData) {
-        console.log("playerDataError - LoadFailed");
+        playerDataCallbacks.playerDataError(ErrorCodes.LoadFailed);
         return;
     }
     var updatedData = new UpdatedData(),
         bundle = gameData.getBundle(bundleId);
     if (bundle === null || reason === undefined) {
-        console.log("playerDataError - BundleOperation");
+        playerDataCallbacks.playerDataError(ErrorCodes.BundleOperation);
         return;
     }
+
+    var prices = bundle.getPrices(),
+        promotion = gameData.getPromotion(bundle.getId()),
+        usePromotion = promotion && fromShop;
+    if (usePromotion) {
+        prices = promotion.getPrices();
+    }
     //Look at tempCurrency
-    for (var i =  0; i < bundle.getPrices().length; i++) {
-        var bundlePrice = bundle.getPrices()[i],
+    for (var i =  0; i < prices.length; i++) {
+        var bundlePrice = prices[i],
             playerCurrency = userProfile.getWallet().getCurrency(bundlePrice.getCurrencyId());
         if (!playerCurrency) {
-            console.log("playerDataError - CurrencyNotFound");
+            playerDataCallbacks.playerDataError(ErrorCodes.CurrencyNotFound);
             return;
         }
         var currentBalance = playerCurrency.getCurrentBalance(),
             updatedBalance = currentBalance - bundlePrice.getValue();
         if (updatedBalance < 0) {
-            console.log("playerDataError - NotEnoughCurrency");
-            //playerDataError -
+            playerDataCallbacks.playerDataError(ErrorCodes.NotEnoughCurrency);
             return;
         }
         var updatedDelta = playerCurrency.getDelta() - bundlePrice.getValue();
@@ -210,26 +215,32 @@ function updateInventoryWithBundle(bundleId, reason) {
 
     for (i = 0; i < bundle.getItems().length; i++) {
         var bundleItem = bundle.getItems()[i],
-            playerItem = new PlayerItem({
-            id: bundleItem.getId()
-        }),
-            inventoryItem = userProfile.getInventory().getItem(bundleItem.getId());
+                playerItem = new PlayerItem({
+                id: bundleItem.getId()
+            }),
+            inventoryItem = userProfile.getInventory().getItem(bundleItem.getId()),
+            bundleItemAmount = bundleItem.getAmount();
+        if (usePromotion) {
+            bundleItemAmount *= promotion.getAmount();
+        }
         if (inventoryItem != null) {
             var inventoryItemAmount = inventoryItem.getAmount();
-            inventoryItemAmount = inventoryItemAmount + bundleItem.getAmount();
+            inventoryItemAmount = inventoryItemAmount + bundleItemAmount;
 
-            inventoryItem.setDelta(bundleItem.getAmount());
+            inventoryItem.setDelta(bundleItemAmount);
             inventoryItem.setAmount(inventoryItemAmount);
+            updatedData.addItem(inventoryItem);
         } else {
-            playerItem.setDelta(bundleItem.getAmount());
-            playerItem.setAmount(bundleItem.getAmount());
+            playerItem.setDelta(bundleItemAmount);
+            playerItem.setAmount(bundleItemAmount);
             userProfile.getInventory().addItem(playerItem);
+            updatedData.addItem(playerItem);
         }
-        updatedData.addItem(playerItem);
     }
 
     sendUpdatePlayerDataEvent(updatedData, reason, "bundle", bundle.getObject());
-    //playerDataUpdated
+
+    playerDataCallbacks.playerDataUpdated(reason, updatedData);
 }
 
 function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingValue) {
@@ -242,7 +253,6 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
                 offset: userProfile.getInventory().getOffset()
             }
         };
-
     if (updatedData.getCurrencies().length > 0) {
         result.wallet.currencies = [];
         for (var i = 0; i < updatedData.getCurrencies().length; i++) {
@@ -260,12 +270,16 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
             var item = updatedData.getItems()[j];
             result.inventory.items.push({
                 id: item.getId(),
-                amount: item.getAmount()
+                amount: item.getAmount(),
+                delta: item.getDelta()
             });
         }
     }
     if (reportingKey && reportingValue) {
         result[reportingKey] = reportingValue;
+    }
+    if (reason) {
+        result.reason = reason;
     }
     updatePlayerData(result);
 }
@@ -293,6 +307,7 @@ function mutateWallet(currencyId, delta, reason) {
 
     if (updatedBalance < 0) {
         playerDataCallbacks.playerDataError(ErrorCodes.NotEnoughCurrency);
+        return;
     }
 
     var updatedDelta = delta + currency.getDelta();
@@ -388,12 +403,14 @@ module.exports = {
                 }
             });
         },
-        updatePlayerData: updatePlayerData,
+        updatePlayerData: function () {
+            sendUpdatePlayerDataEvent(new UpdatedData());
+        },
         getWallet: function () {
             var userProf = getUserProfile();
             if (userProf) {
                 return userProf.getWallet();
-            }else {
+            } else {
                 playerDataCallbacks.playerDataError(ErrorCodes.WalletNotFound);
             }
         },
@@ -404,18 +421,23 @@ module.exports = {
             return getUserProfile();
         },
         addItemToInventory: function (itemId, amount, reason) {
+
+            if (parseInt(amount) < 0) {
+                playerDataCallbacks.playerDataError(ErrorCodes.ItemOperation);
+                return;
+            }
             updateInventoryWithItem(itemId, amount, "add", reason);
         },
         subtractItemFromInventory: function (itemId, amount, reason) {
+
+            if (parseInt(amount) < 0) {
+                playerDataCallbacks.playerDataError(ErrorCodes.ItemOperation);
+                return;
+            }
             updateInventoryWithItem(itemId, amount, "substract", reason);
         },
-        consumeBundle: function (bundleId, reason) {
-            updateInventoryWithBundle(bundleId, reason);
-        },
-        setPlayerDataCallbacks: function (listeners) {
-            for (var listenerName in listeners) {
-                playerDataCallbacks[listenerName] = listeners[listenerName];
-            }
+        consumeBundle: function (bundleId, reason, fromShop) {
+            updateInventoryWithBundle(bundleId, reason, fromShop);
         },
         addCurrencyToWallet: function (currencyId, delta, reason) {
 
@@ -428,14 +450,18 @@ module.exports = {
         },
         subtractCurrencyFromWallet: function (currencyId, delta, reason) {
 
-            if (delta > 0) {
+            if (parseInt(delta) < 0) {
                 playerDataCallbacks.playerDataError(ErrorCodes.CurrencyOperation);
                 return;
             }
 
             mutateWallet(currencyId, parseFloat(-delta), reason);
+        },
+        setPlayerDataCallbacks: function (listeners) {
+            for (var listenerName in listeners) {
+                playerDataCallbacks[listenerName] = listeners[listenerName];
+            }
         }
-
     }
 };
 

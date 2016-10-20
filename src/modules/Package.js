@@ -27,7 +27,6 @@ module.exports = {
         requestPackages: function (callback) {
             EventUtil.sendEvent("requestPackages", {}, function (responseData) {
                 data = storePackagesAndPromotions(responseData);
-                Events.publish("onPackagesUpdated", data);
                 if (callback) {
                     callback(data);
                 }
@@ -46,9 +45,6 @@ module.exports = {
             EventUtil.sendEvent("prepareWebPayments", {}, function (responseData) {
                 Payments.openPaymentsScreen(packageId, responseData.data.referenceNumber);
             });
-        },
-        onPackagesUpdated: function (callback) {
-            Events.subscribe("onPackagesUpdated", callback);
         }
     }
 };

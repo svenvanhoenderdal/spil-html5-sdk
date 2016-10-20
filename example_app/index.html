@@ -30,37 +30,56 @@
         <div class="panel-body">
             <div class="tab-content">
                 <div class="tab-pane fade in active" id="game_config">
-                    <button id="game_config_refresh" onclick="SpilSDK.refreshConfig()">Refresh GameConfig</button>
+                    <button id="game_config_refresh">Refresh GameConfig</button>
                     <br>
                     <span id="game_config_area"></span>
                 </div>
                 <div class="tab-pane fade" id="custom_event">
                     <input id="custom_event_name" type="text" value="milestoneAchieved">
                     <input id="custom_event_data" type="text" value="{}">
-                    <button id="custom_evend_send" onclick="send_custom_event()">Send custom event</button>
+                    <button id="custom_evend_send">Send custom event</button>
                     <br>
                     <span>Result: </span>
                     <span id="custom_event_result"></span>
                 </div>
                 <div class="tab-pane fade" id="packages">
-                    <button id="request_packages" onclick="SpilSDK.requestPackages()">Update packages and promotions</button>
+                    <button id="requestPackages">Update packages and promotions</button><br>
+                    <button id="loadPackages">Load Packages</button>
                     <ul id='package_list'></ul>
                 </div>
                 <div class="tab-pane fade" id="playerdata">
-                    <div>
-                        <button id="getcurrencies">SpilSDK.getWallet()</button>
-                        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="width:400px;"></div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <button id="refreshWalletButton">Refresh Wallet</button>
+                            <div class="panel-group" id="WalletAccordion" role="tablist" aria-multiselectable="true" style="width:400px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <button id="refreshInventoryButton">Refresh Inventory</button>
+                            <div class="panel-group" id="inventoryAccordion" role="tablist" aria-multiselectable="true" style="width:400px;"></div>
+                            <select id="inventoryAddList"></select>
+                            <button id="inventoryAddButton">Add item</button>
+                        </div>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="ingameshop">
-                    <button id="ingameshop" onclick="refreshShop()">RefreshShop</button>
+                    <button id="ingameshopButton">Refresh Shop</button>
                     <li id="ingameshopTabTemplate" class="hidden"><a class="ingameshopTabButton" href="#ingameshopTabPlaceholder" data-toggle="tab">Placeholder</a></li>
                     <div id="ingameshopTabPlaceholder" class="tab-pane fade ">
-                        <ul class="ingameshopEntryList">
-                            <li id="ingameshopEntryTemplate" class="hidden">
-                                <span class="bundleHolder"></span><span class="labelHolder"></span> <span class="buttonHolder"></span>
-                            </li>
-                        </ul>
+                        <div class="ingameshopEntryList">
+                            <div id="ingameshopEntryTemplate" class="hidden row">
+                                <span class="bundleHolder col-md-2"></span>
+                                <div class="col-md-2 row">
+                                    <span class="col-md-6 itemHolder"></span>
+                                    <span class="col-md-6 promotionItemHolder"></span>
+                                </div>
+                                <div class="col-md-2 row">
+                                    <span class="col-md-6 priceHolder"></span>
+                                    <span class="col-md-6 promotionPriceHolder"></span>
+                                </div>
+                                <span class="labelHolder col-md-2"></span>
+                                <button class="buttonHolder">Buy</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="panel with-nav-tabs panel-default">
                         <div class="panel-heading">
