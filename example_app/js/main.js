@@ -22,7 +22,7 @@ $(function(){
     }
     var reloadGameConfig = function() {
         var gameConfig = SpilSDK.getConfigAll()
-       $('#game_config_area').text(JSON.stringify(gameConfig));
+        $('#game_config_area').text(JSON.stringify(gameConfig));
     }
     var send_custom_event = function() {
         try {
@@ -124,21 +124,21 @@ $(function(){
 
     var inventoryItemPanelTemplate = doT.template(''+
         '<div class="panel panel-default inventoryPanel{{=it.itemId}}">'+
-            '<div class="panel-heading" role="tab" id="panel_{{=it.id}}">'+
-                '<div class="panel-title" style="font-size:12px">'+
-                    '<a role="button" data-toggle="collapse" href="#inventoryBody{{=it.id}}">{{=it.name}} (id:{{=it.itemId}})</a>'+
-                    '<span class="badge pull-right" >{{=it.amount}}</span>'+
-                '</div>'+
-            '</div>'+
-            '<div id="inventoryBody{{=it.id}}" class="panel-collapse collapse">'+
-                '<div class="panel-body">' +
-                    '<div class="btn btn-primary decrement">-</div>' +
-                    '<input type="amount" class="inputfield" value="1">'+
-                    '<div class="btn btn-primary increment">+</div>' +
-                    '<div class="btn btn-primary saveInventory" data-id="{{=it.itemId}}" >save</div>' +
-                    '<div class="statusImage hidden glyphicon glyphicon-ok" style="width:40px;"></div>' +
-                '</div>'+
-            '</div>'+
+        '<div class="panel-heading" role="tab" id="panel_{{=it.id}}">'+
+        '<div class="panel-title" style="font-size:12px">'+
+        '<a role="button" data-toggle="collapse" href="#inventoryBody{{=it.id}}">{{=it.name}} (id:{{=it.itemId}})</a>'+
+        '<span class="badge pull-right" >{{=it.amount}}</span>'+
+        '</div>'+
+        '</div>'+
+        '<div id="inventoryBody{{=it.id}}" class="panel-collapse collapse">'+
+        '<div class="panel-body">' +
+        '<div class="btn btn-primary decrement">-</div>' +
+        '<input type="amount" class="inputfield" value="1">'+
+        '<div class="btn btn-primary increment">+</div>' +
+        '<div class="btn btn-primary saveInventory" data-id="{{=it.itemId}}" >save</div>' +
+        '<div class="statusImage hidden glyphicon glyphicon-ok" style="width:40px;"></div>' +
+        '</div>'+
+        '</div>'+
         '</div>');
 
     function refreshInventory() {
@@ -206,19 +206,24 @@ $(function(){
     });
 
     function refreshWallet() {
-        var currencies = SpilSDK.getWallet().currencies;
-        $('#WalletAccordion').html('');
 
-        for(var i=0;i<currencies.length;i++){
-            var currency = currencies[i];
+        //SpilSDK.requestPlayerData(function(){
+            var currencies = SpilSDK.getWallet().currencies;
+            $('#WalletAccordion').html('');
 
-            $('#WalletAccordion').append(walletCurrencyPanelTemplate({
-                name:currency.name,
-                currentBalance:currency.currentBalance,
-                id:i,
-                currencyId:currency.id
-            }))
-        }
+            for(var i=0;i<currencies.length;i++){
+                var currency = currencies[i];
+
+                $('#WalletAccordion').append(walletCurrencyPanelTemplate({
+                    name:currency.name,
+                    currentBalance:currency.currentBalance,
+                    id:i,
+                    currencyId:currency.id
+                }))
+            }
+        //})
+
+
     }
 
     $('#refreshWalletButton').click(function(){
@@ -253,7 +258,7 @@ $(function(){
     SpilSDK('com.spilgames.slot', '0.0.2', function(){
         console.log('sdk ready');
         initgame();
-    }, 'stg');
+    }, 'prd');
 
     SpilSDK.setConfigDataCallbacks({
         configDataUpdated: reloadGameConfig
@@ -265,6 +270,8 @@ $(function(){
 
         },
         playerDataUpdated:function(reason, updatedData){
+            console.log('playerDataUpdated triggered');
+
             var currencies = updatedData.currencies;
             for (var i = 0; i < currencies.length; i++) {
                 var currency = currencies[i];
