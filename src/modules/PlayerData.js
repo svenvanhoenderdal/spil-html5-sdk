@@ -4,11 +4,13 @@ var ErrorCodes = require("../core_modules/ErrorCodes"),
     UpdatedData = require("../models/playerData/UpdatedData"),
     Wallet = require("../models/playerData/Wallet"),
     Inventory = require("../models/playerData/Inventory"),
-    PlayerItem = require("../models/playerData/PlayerItem");
+    PlayerItem = require("../models/playerData/PlayerItem"),
+    PreloadQueue = require("../core_modules/PreloadQueue");
 
 var userProfile,
     lastStoredReason = "",
     timeoutObject = false,
+    timeoutObjectTaskKey,
     lastUpdatedData,
     playerDataCallbacks = {
         playerDataError: function (error) {},
@@ -243,7 +245,13 @@ function updateInventoryWithBundle(bundleId, reason, fromShop) {
     playerDataCallbacks.playerDataUpdated(reason, updatedData);
 }
 
-function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingValue) {
+function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingValue, taskKey) {
+
+    if (taskKey !== undefined) {
+        TaskQueue.removeTask("PlayerData", taskKey);
+        timeoutObject = false;
+    }
+
     var userProfile = getUserProfile(),
         result = {
             wallet: {
@@ -278,13 +286,88 @@ function sendUpdatePlayerDataEvent(updatedData, reason, reportingKey, reportingV
     if (reportingKey && reportingValue) {
         result[reportingKey] = reportingValue;
     }
+
     if (reason) {
         result.reason = reason;
     }
+
     updatePlayerData(result);
+
 }
 
+var TaskQueue = {
+    getQueue: function (holder) {
+        return JSON.parse(localStorage.getItem(holder)) || [];
+    },
+    addTask: function (holder, task) {
+        var queue = this.getQueue(holder),
+            taskKey = queue.push({args: task.args});
+
+        localStorage.setItem(holder, JSON.stringify(queue));
+
+        return taskKey - 1;
+    },
+    runTasks: function (holder, callback) {
+        var queue = this.getQueue(holder),
+            queueActions = [];
+        for (var i = 0; i < queue.length; i++) {
+
+            var task = queue[i];
+
+            if (holder === "PlayerData") {
+                queueActions.push({
+                    action: mutateWalletTask,
+                    args: task.args
+                });
+            }
+
+        }
+
+        PreloadQueue(queueActions, callback);
+
+        this.clearQueue(holder);
+    },
+    removeTask: function (holder, taskKey) {
+        var queue = this.getQueue(holder);
+        queue.splice(taskKey, 1);
+        localStorage.setItem(holder, JSON.stringify(queue));
+    },
+    updateTask: function (holder, taskKey, args) {
+        var queue = this.getQueue(holder);
+        queue[taskKey].args = args;
+
+        localStorage.setItem(holder, JSON.stringify(queue));
+    },
+    clearQueue: function (holder) {
+        localStorage.setItem(holder, JSON.stringify([]));
+    }
+};
+
+function mutateWalletTask(requestUpdatedData, reason) {
+
+    requestUpdatedData = new UpdatedData({"currencies": requestUpdatedData.currencies});
+
+    var currencies = requestUpdatedData.getCurrencies(),
+        currency,
+        userCurrency;
+
+    for (var i = 0; i < currencies.length; i++) {
+        currency = currencies[i];
+
+        userCurrency = getUserProfile().getWallet().getCurrency(currency.id);
+
+        userCurrency.setDelta(currency.getDelta());
+        userCurrency.setCurrentBalance(currency.getCurrentBalance());
+    }
+
+
+    sendUpdatePlayerDataEvent(requestUpdatedData, reason);
+}
+
+var requestUpdatedData = new UpdatedData();
+
 function mutateWallet(currencyId, delta, reason) {
+
     var userProf = getUserProfile();
     if (!userProf) {
         playerDataCallbacks.playerDataError(ErrorCodes.WalletNotFound);
@@ -305,6 +388,7 @@ function mutateWallet(currencyId, delta, reason) {
 
     var updatedBalance = parseFloat(currency.getCurrentBalance()) + parseFloat(delta);
 
+
     if (updatedBalance < 0) {
         playerDataCallbacks.playerDataError(ErrorCodes.NotEnoughCurrency);
         return;
@@ -321,25 +405,55 @@ function mutateWallet(currencyId, delta, reason) {
 
     if (userProf.getWallet().getLogic() === "CLIENT") {
 
-        var updatedData = new UpdatedData({"currencies": [currency]});
-
+        requestUpdatedData.addCurrency(currency);
 
         if (lastStoredReason === reason || lastStoredReason === "") {
 
-            playerDataCallbacks.playerDataUpdated(reason, updatedData);
+            playerDataCallbacks.playerDataUpdated(reason, new UpdatedData({"currencies": [currency]}));
 
+            /**
+             * if there is no timeout object yet defined
+             */
             if (timeoutObject === false) {
                 lastStoredReason = reason;
-                lastUpdatedData = updatedData;
+                lastUpdatedData = requestUpdatedData;
+                /**
+                 * add task
+                 */
+                timeoutObjectTaskKey = TaskQueue.addTask("PlayerData", {
+                    args: [requestUpdatedData, reason]
+                });
 
-                timeoutObject = setTimeout(sendUpdatePlayerDataEvent.bind(null, updatedData, reason), 5000);
+                timeoutObject = setTimeout(sendUpdatePlayerDataEvent.bind(
+                    null,
+                    requestUpdatedData,
+                    reason,
+                    null, null,
+                    timeoutObjectTaskKey
+                ), 5000);
+
+            /**
+             * if there is allready a timeout object defined,
+             * replace the current timeout object with the new updated data and reset the timer
+             *
+             * update the task to execute with
+             */
             }else {
-                //unregister current timeout object
-                //and register a new one
+                /** unregister current timeout object
+                    and register a new one
+                 **/
                 clearTimeout(timeoutObject);
-                lastUpdatedData = updatedData;
+                lastUpdatedData = requestUpdatedData;
 
-                timeoutObject = setTimeout(sendUpdatePlayerDataEvent.bind(null, updatedData, reason), 5000);
+                TaskQueue.updateTask("PlayerData", timeoutObjectTaskKey, [requestUpdatedData, reason]);
+
+                timeoutObject = setTimeout(sendUpdatePlayerDataEvent.bind(
+                    null,
+                    requestUpdatedData,
+                    reason,
+                    null, null,
+                    timeoutObjectTaskKey
+                ), 5000);
             }
 
         }else {
@@ -347,13 +461,16 @@ function mutateWallet(currencyId, delta, reason) {
 
             clearTimeout(timeoutObject);
             timeoutObject = false;
-            sendUpdatePlayerDataEvent(lastUpdatedData, lastReason);
+            TaskQueue.removeTask("PlayerData", timeoutObjectTaskKey);
+            sendUpdatePlayerDataEvent(requestUpdatedData, lastReason);
 
-            sendUpdatePlayerDataEvent(updatedData, reason);
+            var newUpdatedData = new UpdatedData({"currencies": [currency]});
+
+            sendUpdatePlayerDataEvent(newUpdatedData, reason);
             lastStoredReason = reason;
-            lastUpdatedData = updatedData;
+            lastUpdatedData = newUpdatedData;
 
-            playerDataCallbacks.playerDataUpdated(reason, updatedData);
+            playerDataCallbacks.playerDataUpdated(reason, newUpdatedData);
 
         }
 
@@ -363,6 +480,7 @@ function mutateWallet(currencyId, delta, reason) {
 function updatePlayerData(data, callback) {
     EventUtil.sendEvent("updatePlayerData", data, function (responseData) {
         processPlayerData(responseData.data.wallet, responseData.data.inventory);
+
         if (callback) {
             callback(userProfile);
         }
@@ -391,20 +509,34 @@ var playerDataUpdateReasons = {
 module.exports = {
     "SpilSDK": {
         requestPlayerData: function (callback) {
-            var userProfile = getUserProfile();
-            eventData = {
-                "wallet": {"offset": userProfile.getWallet().getOffset()},
-                "inventory": {"offset": userProfile.getInventory().getOffset()}
-            };
-            EventUtil.sendEvent("requestPlayerData", eventData, function (responseData) {
-                processPlayerData(responseData.data.wallet, responseData.data.inventory);
-                if (callback) {
-                    callback(userProfile);
-                }
-            });
-        },
-        updatePlayerData: function () {
-            sendUpdatePlayerDataEvent(new UpdatedData());
+
+            function request(callback) {
+                var userProfile = getUserProfile();
+                eventData = {
+                    "wallet": {"offset": userProfile.getWallet().getOffset()},
+                    "inventory": {"offset": userProfile.getInventory().getOffset()}
+                };
+                EventUtil.sendEvent("requestPlayerData", eventData, function (responseData) {
+                    processPlayerData(responseData.data.wallet, responseData.data.inventory);
+                    if (callback) {
+                        callback(userProfile);
+                    }
+                });
+            }
+
+            /**
+             * if we have task run the tasks
+             */
+            if (TaskQueue.getQueue("PlayerData").length > 0) {
+                request(function () {
+                    TaskQueue.runTasks("PlayerData", function () {
+                        //request();
+                    });
+                });
+
+            }else {
+                request(callback);
+            }
         },
         getWallet: function () {
             var userProf = getUserProfile();
@@ -455,7 +587,7 @@ module.exports = {
                 return;
             }
 
-            mutateWallet(currencyId, parseFloat(-delta), reason);
+            mutateWallet(currencyId, -Math.abs(delta), reason);
         },
         setPlayerDataCallbacks: function (listeners) {
             for (var listenerName in listeners) {
