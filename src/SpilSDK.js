@@ -22,8 +22,11 @@ SpilSDK = function (bundleId, appVersion, callback, environment) {
     var ConfigModule = require("./modules/Config");
     var Package = require("./modules/Package");
     var PlayerData = require("./modules/PlayerData");
+    var Ads = require("./modules/Ads");
+    var ScriptLoader = require("./core_modules/ScriptLoader");
 
-    var modules = [EventUtil, GameData, ConfigModule, Package, PlayerData];
+
+    var modules = [EventUtil, GameData, ConfigModule, Package, PlayerData, Ads];
 
     function init() {
         PreloadQueue([{
@@ -33,12 +36,21 @@ SpilSDK = function (bundleId, appVersion, callback, environment) {
                 action: "loadscript",
                 args: ["https://payments.spilgames.com/static/javascript/spil/payment.portal.js"]
             }, {
+                action: function(callback) {
+                    ScriptLoader("http://cdn.gameplayer.io/api/js/game.js", function(){
+                        Ads.SpilSDK.initAds(callback);
+                    });
+                }
+            },
+            {
                 action: function (callback) {
                     GameData.SpilSDK.requestGameData(function () {
                         PlayerData.SpilSDK.requestPlayerData(callback);
                     });
                 }
-            }], function () {
+            }
+            ], function () {
+
             callback(SpilSDK);
         }
         );
