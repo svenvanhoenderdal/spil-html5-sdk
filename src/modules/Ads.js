@@ -20,9 +20,6 @@ module.exports = {
                         };
 
                         GameAPI.loadAPI (function (apiInstance) {
-                            if (window.console && window.console.log) {
-                                console.log('GameAPI version ' + apiInstance.version + ' loaded!');
-                            }
                             callback();
                         }, SpilData);
                 }else{
