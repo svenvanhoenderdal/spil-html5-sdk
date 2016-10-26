@@ -254,6 +254,14 @@ $(function(){
         refreshShop();
     });
 
+    $('#RequestRewardVideoButton').click(function(){
+        SpilSDK.RequestRewardVideo();
+    });
+
+    $('#PlayVideoButton').click(function(){
+        SpilSDK.PlayVideo();
+    });
+
 
     SpilSDK('com.spilgames.slot', '0.0.2', function(){
         console.log('sdk ready');
@@ -325,4 +333,20 @@ $(function(){
             refreshShop();
         }
     })
+
+    SpilSDK.setAdCallbacks({
+        AdAvailable: function(adType){
+            $('#rewardVideoText').html('"' + adType + '" Available');
+        },
+        AdNotAvailable: function(adType){
+            $('#rewardVideoText').html('"' + adType + '" not available');
+        },
+        AdStart: function(adType){
+            $('#playVideoText').append('"' + adType + '" start <br/>');
+        },
+        AdFinished: function(network, adType, reason){
+            $('#playVideoText').append('"' + network + '" "' + adType + '" finished action "' + reason + '"<br/>');
+        }
+    })
+
 });
