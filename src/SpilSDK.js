@@ -41,8 +41,11 @@ SpilSDK = function (bundleId, appVersion, callback, environment) {
                         Ads.SpilSDK.initAds(callback);
                     });
                 }
-            },
-            {
+            }, {
+                action: Package.SpilSDK.requestPackages
+            }, {
+                action: ConfigModule.SpilSDK.refreshConfig
+            },{
                 action: function (callback) {
                     GameData.SpilSDK.requestGameData(function () {
                         PlayerData.SpilSDK.requestPlayerData(callback);
